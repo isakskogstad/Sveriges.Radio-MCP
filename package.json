@@ -1,0 +1,55 @@
+{
+  "name": "sverigesradio-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Sveriges Radio's Open API - access Swedish radio programs, podcasts, live streams, schedules, news and traffic",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "sr-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc && chmod +x dist/index.js dist/streamable-http-server.js",
+    "dev": "tsx src/index.ts",
+    "dev:http": "tsx src/streamable-http-server.ts",
+    "start": "node dist/index.js",
+    "start:streamable": "node dist/streamable-http-server.js",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "sveriges-radio",
+    "sr",
+    "swedish-radio",
+    "radio",
+    "podcast",
+    "podcasts",
+    "sweden",
+    "svenska",
+    "news",
+    "traffic",
+    "live-stream"
+  ],
+  "author": "Isak Skogstad",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KSAklfszf921/sverigesradio-mcp.git"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.22.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
