@@ -5,6 +5,7 @@
  * HTTP transport (for remote/Render deployment)
  */
 
+import 'dotenv/config';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import {
