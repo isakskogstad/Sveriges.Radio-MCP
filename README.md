@@ -34,6 +34,40 @@ npm run build
 npm start
 ```
 
+### HTTP Server with Authentication
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Set your auth token (optional)
+echo "MCP_AUTH_TOKEN=your-secret-token" >> .env
+
+# Start HTTP server
+npm run start:streamable
+```
+
+**Endpoints:**
+- `GET /health` - Health check (no auth required)
+- `GET /sse` or `/mcp` - MCP Server connection (Bearer token if configured)
+
+**Authentication:**
+If `MCP_AUTH_TOKEN` is set, include in requests:
+```bash
+curl -H "Authorization: Bearer your-secret-token" \
+  https://your-server.com/sse
+```
+
+**For Lovable/AI Tools:**
+```javascript
+// Configure MCP endpoint with Bearer token
+{
+  "url": "https://your-server.com/sse",
+  "headers": {
+    "Authorization": "Bearer your-secret-token"
+  }
+}
+```
+
 ## 📡 Available Tools (26 total) ✅
 
 ### Channels (2 tools)
@@ -78,26 +112,53 @@ npm start
 - ✅ `get_episode_group` - Episode collections (e.g., "Famous Crimes")
 - ✅ `search_all` - Global search across programs, episodes & channels
 
-## 🎯 Example Prompts
+## 📚 Resources (4 total) ✅
 
-### Find a Podcast
+Quick reference data available via `ReadResource`:
+
+- **sr://api/info** - API capabilities, versioning, rate limits, defaults
+- **sr://channels/all** - Complete channel list with IDs (P1-P4, all local stations)
+- **sr://audio/quality-guide** - Audio quality levels, formats, recommendations
+- **sr://categories/programs** - All 15 program categories with IDs
+
+## 🎯 Prompts (6 total) ✅
+
+Pre-built workflows via `GetPrompt`:
+
+### 1. `find-podcast`
+Find podcasts by topic (e.g., "historia", "true crime", "musik")
 ```
-Use find-podcast with topic="historia"
+Arguments: topic (required), limit (optional)
 ```
 
-### What's On Now?
+### 2. `whats-on-now`
+See what's broadcasting NOW on SR
 ```
-Use whats-on-now with channel="P3"
-```
-
-### Traffic Check
-```
-Use traffic-nearby with location="Stockholm"
+Arguments: channel (optional - P1, P2, P3, P4)
 ```
 
-### Current Song
+### 3. `traffic-nearby`
+Check traffic conditions in your area
 ```
-Use whats-playing-now with channel="P2"
+Arguments: location (required), severity (optional 1-5)
+```
+
+### 4. `news-briefing`
+Latest news summary from SR
+```
+Arguments: program (optional - "Ekot", "Ekonomiekot", etc.)
+```
+
+### 5. `explore-schedule`
+Browse channel schedule (TV guide style)
+```
+Arguments: channel (required), date (optional YYYY-MM-DD)
+```
+
+### 6. `whats-playing-now` 🎵
+Current song on a music channel
+```
+Arguments: channel (required - "P2", "P3", "SR Klassiskt")
 ```
 
 ## 🛠️ Development
@@ -140,13 +201,15 @@ MIT © Isak Skogstad
 
 ## ⚠️ Status
 
-**Version:** 1.0.0 (Beta)
-**Status:** ✅ All 26 tools implemented and working!
+**Version:** 1.0.0
+**Status:** ✅ Production Ready!
 
-- ✅ Complete SR API coverage
-- ✅ ETag-based caching for optimal performance
-- ✅ TypeScript with full type safety
-- ⏳ Resources & Prompts (coming soon)
-- ⏳ Render deployment (coming soon)
+- ✅ **26 Tools** - Complete SR API coverage
+- ✅ **4 Resources** - Quick reference data
+- ✅ **6 Prompts** - Pre-built workflows
+- ✅ **Bearer Token Auth** - Optional security for HTTP deployments
+- ✅ **ETag Caching** - Optimal performance
+- ✅ **TypeScript** - Full type safety
+- ⏳ **Render Deployment** - Coming soon
 
 Sveriges Radio's API is maintained but not actively developed. This MCP server provides stable access to all available endpoints.

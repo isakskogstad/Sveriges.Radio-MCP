@@ -10,8 +10,14 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { allTools } from './tools/index.js';
+import { allResources, resourceContents } from './resources/index.js';
+import { allPrompts, promptMessages } from './prompts/index.js';
 
 const server = new Server(
   {
@@ -21,6 +27,8 @@ const server = new Server(
   {
     capabilities: {
       tools: {},
+      resources: {},
+      prompts: {},
     },
   }
 );
@@ -74,6 +82,69 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       isError: true,
     };
   }
+});
+
+// List resources handler
+server.setRequestHandler(ListResourcesRequestSchema, async () => {
+  return {
+    resources: allResources,
+  };
+});
+
+// Read resource handler
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+  const { uri } = request.params;
+
+  const contentGenerator = resourceContents[uri];
+  if (!contentGenerator) {
+    throw new Error(`Unknown resource: ${uri}`);
+  }
+
+  const content = contentGenerator();
+  return {
+    contents: [
+      {
+        uri,
+        mimeType: 'application/json',
+        text: JSON.stringify(content, null, 2),
+      },
+    ],
+  };
+});
+
+// List prompts handler
+server.setRequestHandler(ListPromptsRequestSchema, async () => {
+  return {
+    prompts: allPrompts,
+  };
+});
+
+// Get prompt handler
+server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+
+  const prompt = allPrompts.find((p) => p.name === name);
+  if (!prompt) {
+    throw new Error(`Unknown prompt: ${name}`);
+  }
+
+  const messageGenerator = promptMessages[name];
+  if (!messageGenerator) {
+    throw new Error(`No message generator for prompt: ${name}`);
+  }
+
+  const message = messageGenerator(args || {});
+  return {
+    messages: [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: message,
+        },
+      },
+    ],
+  };
 });
 
 async function main() {
