@@ -7,6 +7,10 @@ MCP server for Sveriges Radio's Open API - access Swedish radio programs, podcas
 - **26 Tools** for accessing SR's complete API
 - **4 Resources** with reference data
 - **6 Prompts** for common use cases
+- **Modern Transport** - StreamableHTTP (2025-03-26 spec) + SSE legacy support
+- **Session Management** - Stateful conversations with automatic cleanup
+- **Enhanced Instructions** - Comprehensive guide for LLMs built into server
+- **JSON-RPC Error Codes** - Standardized error handling
 - **ETag-based caching** for optimal performance
 - **TypeScript** with full type safety
 - **HTTPS** secure connection
@@ -47,17 +51,47 @@ npm run start:streamable
 ```
 
 **Endpoints:**
-- `GET /health` - Health check (no auth required)
-- `GET /sse` or `/mcp` - MCP Server connection (Bearer token if configured)
+- `GET /health` - Health check with server status (no auth required)
+- `POST/GET/DELETE /mcp` - Modern MCP endpoint (StreamableHTTP)
+  - `POST /mcp` - Send MCP requests (initialize, tools/list, etc.)
+  - `GET /mcp` - Open SSE stream for real-time responses
+  - `DELETE /mcp` - Close session explicitly
+- `GET /sse` - Legacy SSE endpoint (backward compatibility)
+- `POST /messages?sessionId=xxx` - Legacy message endpoint
 
 **Authentication:**
 If `MCP_AUTH_TOKEN` is set, include in requests:
 ```bash
+# Modern endpoint
 curl -H "Authorization: Bearer your-secret-token" \
-  https://your-server.com/sse
+     -H "Accept: application/json, text/event-stream" \
+     https://your-server.com/mcp
+
+# Legacy endpoint
+curl -H "Authorization: Bearer your-secret-token" \
+     https://your-server.com/sse
 ```
 
-**For Lovable/AI Tools:**
+**Session Management:**
+Modern endpoint uses `Mcp-Session-Id` header for stateful conversations:
+```bash
+# Initialize (server returns session ID in header)
+curl -X POST https://your-server.com/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize",...}'
+
+# Subsequent requests (include session ID)
+curl -X POST https://your-server.com/mcp \
+  -H "Mcp-Session-Id: <session-id-from-above>" \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
+```
+
+**For Claude Web / Modern MCP Clients:**
+The modern `/mcp` endpoint is designed for Claude on the web and other clients supporting the 2025-03-26 Streamable HTTP specification.
+
+**For Lovable/AI Tools (Legacy):**
 ```javascript
 // Configure MCP endpoint with Bearer token
 {
@@ -207,9 +241,95 @@ MIT © Isak Skogstad
 - ✅ **26 Tools** - Complete SR API coverage
 - ✅ **4 Resources** - Quick reference data
 - ✅ **6 Prompts** - Pre-built workflows
+- ✅ **Modern Transport** - StreamableHTTP + SSE legacy support
+- ✅ **Session Management** - Stateful conversations
+- ✅ **Enhanced Instructions** - Built-in LLM guidance
+- ✅ **JSON-RPC Errors** - Standardized error handling
 - ✅ **Bearer Token Auth** - Optional security for HTTP deployments
 - ✅ **ETag Caching** - Optimal performance
 - ✅ **TypeScript** - Full type safety
 - ⏳ **Render Deployment** - Coming soon
 
 Sveriges Radio's API is maintained but not actively developed. This MCP server provides stable access to all available endpoints.
+
+## 🏗️ Architecture & Best Practices
+
+This server follows MCP best practices from the 2025-03-26 specification:
+
+### Modern Transport Layer
+- **StreamableHTTP Transport** - Primary endpoint for modern clients (Claude web, etc.)
+- **SSE Transport** - Backward compatibility for legacy clients
+- **Dual Support** - Same server, both transports, maximum compatibility
+
+### Session Management
+- **Stateful Conversations** - Sessions tracked via `Mcp-Session-Id` header
+- **Automatic Cleanup** - Resources freed when sessions close
+- **In-Memory Storage** - Fast session lookup using JavaScript Map
+
+### Error Handling
+- **JSON-RPC 2.0 Compliant** - Standardized error codes
+  - `-32000`: Missing Bearer token
+  - `-32001`: Invalid/expired token
+  - `-32003`: Session errors
+  - `-32603`: Internal server errors
+- **WWW-Authenticate Header** - Proper OAuth discovery on 401
+
+### Enhanced LLM Instructions
+The server includes comprehensive instructions that help LLMs understand:
+- How to use each tool category
+- Best practices for workflows (e.g., search first, then get details)
+- Tips for using Resources and Prompts
+- Example usage patterns
+
+### Future Enhancements (Roadmap)
+
+#### OAuth 2.1 Authentication (Optional)
+For user-specific access and fine-grained permissions:
+```
+GET /.well-known/oauth-protected-resource    - Resource metadata
+GET /.well-known/oauth-authorization-server  - Auth server metadata
+GET /authorize                               - User login & consent
+GET /callback                                - Handle auth code
+POST /token                                  - Exchange code for access token
+POST /register                               - Dynamic client registration
+```
+
+**Why OAuth 2.1?**
+- User-specific API access
+- Scope-based permissions
+- Integration with existing auth (Firebase, Auth0, Clerk)
+- Standard discovery flow for MCP clients
+
+**Current Status:** Not needed for Sveriges Radio (public API), but architecture ready for future expansion.
+
+## 🧪 Testing
+
+Test the health endpoint:
+```bash
+curl http://localhost:3000/health | jq .
+```
+
+Test modern MCP endpoint:
+```bash
+# Initialize
+curl -X POST http://localhost:3000/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "initialize",
+    "params": {
+      "protocolVersion": "2024-11-05",
+      "capabilities": {},
+      "clientInfo": {"name": "test", "version": "1.0"}
+    }
+  }' -i | grep -i mcp-session-id
+
+# List tools (use session ID from above)
+curl -X POST http://localhost:3000/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Mcp-Session-Id: <your-session-id>" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' | jq '.result.tools | length'
+```
