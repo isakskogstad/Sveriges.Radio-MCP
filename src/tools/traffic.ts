@@ -13,20 +13,25 @@ const GetTrafficMessagesSchema = z.object({
   date: z.string().optional().describe('Datum (YYYY-MM-DD)'),
   page: z.number().min(1).optional(),
   size: z.number().min(1).max(100).optional(),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
 });
 
 const GetTrafficAreasSchema = z.object({
   latitude: z.number().optional().describe('Latitud (för GPS-sökning)'),
   longitude: z.number().optional().describe('Longitud (för GPS-sökning)'),
+  page: z.number().min(1).optional().describe('Sidnummer (endast vid hämtning av alla områden)'),
+  size: z.number().min(1).max(100).optional().describe('Sidstorlek (endast vid hämtning av alla områden)'),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
 });
 
 // Tool handlers
 export async function getTrafficMessages(params: z.infer<typeof GetTrafficMessagesSchema>) {
-  const { trafficAreaName, date, page, size } = params;
+  const { trafficAreaName, date, page, size, format } = params;
 
   const queryParams: any = { page, size };
   if (trafficAreaName) queryParams.trafficareaname = trafficAreaName;
   if (date) queryParams.date = date;
+  if (format) queryParams.format = format;
 
   const response = await srClient.fetch<PaginatedResponse<SRTrafficMessage>>('traffic/messages', queryParams);
 
@@ -37,11 +42,14 @@ export async function getTrafficMessages(params: z.infer<typeof GetTrafficMessag
 }
 
 export async function getTrafficAreas(params: z.infer<typeof GetTrafficAreasSchema>) {
-  const { latitude, longitude } = params;
+  const { latitude, longitude, page, size, format } = params;
 
   const queryParams: any = {};
   if (latitude !== undefined) queryParams.latitude = latitude;
   if (longitude !== undefined) queryParams.longitude = longitude;
+  if (page !== undefined) queryParams.page = page;
+  if (size !== undefined) queryParams.size = size;
+  if (format) queryParams.format = format;
 
   const response = await srClient.fetch<any>('traffic/areas', queryParams);
 
@@ -82,6 +90,11 @@ export const trafficTools = [
         size: {
           type: 'number',
         },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
+        },
       },
     },
     handler: getTrafficMessages,
@@ -100,6 +113,19 @@ export const trafficTools = [
         longitude: {
           type: 'number',
           description: 'Longitud (för GPS-sökning)',
+        },
+        page: {
+          type: 'number',
+          description: 'Sidnummer (endast vid hämtning av alla områden)',
+        },
+        size: {
+          type: 'number',
+          description: 'Sidstorlek (endast vid hämtning av alla områden)',
+        },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
         },
       },
     },
