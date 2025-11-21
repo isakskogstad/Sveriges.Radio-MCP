@@ -13,6 +13,7 @@ const GetChannelScheduleSchema = z.object({
   date: z.string().optional().describe('Datum (YYYY-MM-DD), default=idag'),
   page: z.number().min(1).optional(),
   size: z.number().min(1).max(100).optional(),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
 });
 
 const GetProgramBroadcastsSchema = z.object({
@@ -21,17 +22,20 @@ const GetProgramBroadcastsSchema = z.object({
   toDate: z.string().optional().describe('Till datum (YYYY-MM-DD)'),
   page: z.number().min(1).optional(),
   size: z.number().min(1).max(100).optional(),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
 });
 
 const GetAllRightNowSchema = z.object({
+  channelId: z.number().optional().describe('Kanal-ID (valfri) - om angiven returneras endast den kanalen'),
   sortBy: z.enum(['channel.name']).optional().describe('Sortera efter kanalnamn'),
   page: z.number().min(1).optional(),
   size: z.number().min(1).max(100).optional(),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
 });
 
 // Tool handlers
 export async function getChannelSchedule(params: z.infer<typeof GetChannelScheduleSchema>) {
-  const { channelId, date, page, size } = params;
+  const { channelId, date, page, size, format } = params;
 
   const queryParams: any = {
     channelid: channelId,
@@ -40,6 +44,7 @@ export async function getChannelSchedule(params: z.infer<typeof GetChannelSchedu
   };
 
   if (date) queryParams.date = date;
+  if (format) queryParams.format = format;
 
   const response = await srClient.fetch<any>('scheduledepisodes', queryParams);
 
@@ -52,7 +57,7 @@ export async function getChannelSchedule(params: z.infer<typeof GetChannelSchedu
 }
 
 export async function getProgramBroadcasts(params: z.infer<typeof GetProgramBroadcastsSchema>) {
-  const { programId, fromDate, toDate, page, size } = params;
+  const { programId, fromDate, toDate, page, size, format } = params;
 
   const queryParams: any = {
     programid: programId,
@@ -62,6 +67,7 @@ export async function getProgramBroadcasts(params: z.infer<typeof GetProgramBroa
 
   if (fromDate) queryParams.fromdate = fromDate;
   if (toDate) queryParams.todate = toDate;
+  if (format) queryParams.format = format;
 
   const response = await srClient.fetch<any>('scheduledepisodes', queryParams);
 
@@ -73,13 +79,24 @@ export async function getProgramBroadcasts(params: z.infer<typeof GetProgramBroa
 }
 
 export async function getAllRightNow(params: z.infer<typeof GetAllRightNowSchema>) {
-  const { sortBy, page, size } = params;
+  const { channelId, sortBy, page, size, format } = params;
 
   const queryParams: any = { page, size };
+  if (channelId !== undefined) queryParams.channelid = channelId;
   if (sortBy) queryParams.sort = sortBy;
+  if (format) queryParams.format = format;
 
   const response = await srClient.fetch<PaginatedResponse<SRScheduleChannel>>('scheduledepisodes/rightnow', queryParams);
 
+  // If single channel requested, return single channel
+  if (channelId !== undefined) {
+    return {
+      channel: (response as any).channel || null,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // Otherwise return all channels
   return {
     channels: (response as any).channels || [],
     pagination: response.pagination,
@@ -109,6 +126,11 @@ export const scheduleTools = [
         },
         size: {
           type: 'number',
+        },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
         },
       },
       required: ['channelId'],
@@ -140,6 +162,11 @@ export const scheduleTools = [
         size: {
           type: 'number',
         },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
+        },
       },
       required: ['programId'],
     },
@@ -147,11 +174,15 @@ export const scheduleTools = [
   },
   {
     name: 'get_all_rightnow',
-    description: 'Översikt av vad som sänds JUST NU på ALLA Sveriges Radio-kanaler samtidigt. Perfekt för att se vad som finns att lyssna på.',
+    description: 'Översikt av vad som sänds JUST NU på ALLA Sveriges Radio-kanaler samtidigt (eller en specifik kanal). Perfekt för att se vad som finns att lyssna på.',
     schema: GetAllRightNowSchema,
     inputSchema: {
       type: 'object',
       properties: {
+        channelId: {
+          type: 'number',
+          description: 'Kanal-ID (valfri) - om angiven returneras endast den kanalen istället för alla',
+        },
         sortBy: {
           type: 'string',
           enum: ['channel.name'],
@@ -162,6 +193,11 @@ export const scheduleTools = [
         },
         size: {
           type: 'number',
+        },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
         },
       },
     },

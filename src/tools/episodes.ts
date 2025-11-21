@@ -15,6 +15,7 @@ const ListEpisodesSchema = z.object({
   audioQuality: z.enum(['low', 'normal', 'hi']).optional().describe('Ljudkvalitet'),
   page: z.number().min(1).optional(),
   size: z.number().min(1).max(100).optional(),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
 });
 
 const SearchEpisodesSchema = z.object({
@@ -23,26 +24,30 @@ const SearchEpisodesSchema = z.object({
   programId: z.number().optional().describe('Filtrera på program'),
   page: z.number().min(1).optional(),
   size: z.number().min(1).max(100).optional(),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
 });
 
 const GetEpisodeSchema = z.object({
   episodeId: z.number().describe('Avsnitt-ID'),
   audioQuality: z.enum(['low', 'normal', 'hi']).optional().describe('Ljudkvalitet'),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
 });
 
 const GetEpisodesBatchSchema = z.object({
   episodeIds: z.string().describe('Kommaseparerade avsnitt-ID (t.ex. "123,456,789")'),
   audioQuality: z.enum(['low', 'normal', 'hi']).optional(),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
 });
 
 const GetLatestEpisodeSchema = z.object({
   programId: z.number().describe('Program-ID'),
   audioQuality: z.enum(['low', 'normal', 'hi']).optional(),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
 });
 
 // Tool handlers
 export async function listEpisodes(params: z.infer<typeof ListEpisodesSchema>) {
-  const { programId, fromDate, toDate, audioQuality, page, size } = params;
+  const { programId, fromDate, toDate, audioQuality, page, size, format } = params;
 
   const queryParams: any = {
     programid: programId,
@@ -53,6 +58,7 @@ export async function listEpisodes(params: z.infer<typeof ListEpisodesSchema>) {
   if (fromDate) queryParams.fromdate = fromDate;
   if (toDate) queryParams.todate = toDate;
   if (audioQuality) queryParams.audioquality = audioQuality;
+  if (format) queryParams.format = format;
 
   const response = await srClient.fetch<PaginatedResponse<SREpisode>>('episodes/index', queryParams);
 
@@ -63,7 +69,7 @@ export async function listEpisodes(params: z.infer<typeof ListEpisodesSchema>) {
 }
 
 export async function searchEpisodes(params: z.infer<typeof SearchEpisodesSchema>) {
-  const { query, channelId, programId, page, size } = params;
+  const { query, channelId, programId, page, size, format } = params;
 
   const queryParams: any = {
     query,
@@ -73,6 +79,7 @@ export async function searchEpisodes(params: z.infer<typeof SearchEpisodesSchema
 
   if (channelId) queryParams.channelid = channelId;
   if (programId) queryParams.programid = programId;
+  if (format) queryParams.format = format;
 
   const response = await srClient.fetch<PaginatedResponse<SREpisode>>('episodes/search', queryParams);
 
@@ -83,10 +90,11 @@ export async function searchEpisodes(params: z.infer<typeof SearchEpisodesSchema
 }
 
 export async function getEpisode(params: z.infer<typeof GetEpisodeSchema>) {
-  const { episodeId, audioQuality } = params;
+  const { episodeId, audioQuality, format } = params;
 
   const queryParams: any = { id: episodeId };
   if (audioQuality) queryParams.audioquality = audioQuality;
+  if (format) queryParams.format = format;
 
   const response = await srClient.fetch<any>('episodes/get', queryParams);
 
@@ -96,10 +104,11 @@ export async function getEpisode(params: z.infer<typeof GetEpisodeSchema>) {
 }
 
 export async function getEpisodesBatch(params: z.infer<typeof GetEpisodesBatchSchema>) {
-  const { episodeIds, audioQuality } = params;
+  const { episodeIds, audioQuality, format } = params;
 
   const queryParams: any = { ids: episodeIds };
   if (audioQuality) queryParams.audioquality = audioQuality;
+  if (format) queryParams.format = format;
 
   const response = await srClient.fetch<PaginatedResponse<SREpisode>>('episodes/getlist', queryParams);
 
@@ -109,10 +118,11 @@ export async function getEpisodesBatch(params: z.infer<typeof GetEpisodesBatchSc
 }
 
 export async function getLatestEpisode(params: z.infer<typeof GetLatestEpisodeSchema>) {
-  const { programId, audioQuality } = params;
+  const { programId, audioQuality, format } = params;
 
   const queryParams: any = { programid: programId };
   if (audioQuality) queryParams.audioquality = audioQuality;
+  if (format) queryParams.format = format;
 
   const response = await srClient.fetch<any>('episodes/getlatest', queryParams);
 
@@ -153,6 +163,11 @@ export const episodeTools = [
         size: {
           type: 'number',
         },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
+        },
       },
       required: ['programId'],
     },
@@ -183,6 +198,11 @@ export const episodeTools = [
         size: {
           type: 'number',
         },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
+        },
       },
       required: ['query'],
     },
@@ -204,6 +224,11 @@ export const episodeTools = [
           enum: ['low', 'normal', 'hi'],
           description: 'Ljudkvalitet',
         },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
+        },
       },
       required: ['episodeId'],
     },
@@ -224,6 +249,11 @@ export const episodeTools = [
           type: 'string',
           enum: ['low', 'normal', 'hi'],
         },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
+        },
       },
       required: ['episodeIds'],
     },
@@ -243,6 +273,11 @@ export const episodeTools = [
         audioQuality: {
           type: 'string',
           enum: ['low', 'normal', 'hi'],
+        },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
         },
       },
       required: ['programId'],

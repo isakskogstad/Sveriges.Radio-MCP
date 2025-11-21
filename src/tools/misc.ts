@@ -1,6 +1,6 @@
 /**
  * Miscellaneous Tools - Sveriges Radio MCP Server
- * Toplists (2), Extra broadcasts (1), Groups (1), Search all (1) = 5 tools
+ * Toplists (2), Extra broadcasts (1), Groups (1), Search all (1), Audio templates (2) = 7 tools
  */
 
 import { z } from 'zod';
@@ -36,6 +36,10 @@ const SearchAllSchema = z.object({
   searchIn: z.enum(['programs', 'episodes', 'channels', 'all']).optional().describe('Var ska det sökas'),
   limit: z.number().min(1).max(50).optional().describe('Max antal resultat per kategori'),
 });
+
+const ListOnDemandAudioTemplatesSchema = z.object({});
+
+const ListLiveAudioTemplatesSchema = z.object({});
 
 // Tool handlers
 export async function getRecentlyPublished(params: z.infer<typeof GetRecentlyPublishedSchema>) {
@@ -156,6 +160,24 @@ export async function searchAll(params: z.infer<typeof SearchAllSchema>) {
   };
 }
 
+export async function listOnDemandAudioTemplates(_params: z.infer<typeof ListOnDemandAudioTemplatesSchema>) {
+  const response = await srClient.fetch<any>('audiourltemplates/ondemandaudiotypes', {});
+
+  return {
+    templates: (response as any).audiourltemplates || [],
+    description: 'URL-mallar för on-demand-ljud. Använd [quality]=hi/normal/lo, [audioId]=avsnitt-ID',
+  };
+}
+
+export async function listLiveAudioTemplates(_params: z.infer<typeof ListLiveAudioTemplatesSchema>) {
+  const response = await srClient.fetch<any>('audiourltemplates/liveaudiotypes', {});
+
+  return {
+    templates: (response as any).audiourltemplates || [],
+    description: 'URL-mallar för live-ljud. Använd [quality]=hi/normal/lo, [channelid]=kanal-ID',
+  };
+}
+
 // Export tool definitions
 export const miscTools = [
   {
@@ -266,5 +288,25 @@ export const miscTools = [
       required: ['query'],
     },
     handler: searchAll,
+  },
+  {
+    name: 'list_ondemand_audio_templates',
+    description: 'Hämta URL-mallar för on-demand-ljud (podcast/avsnitt). Mallarna visar hur ljudlänkar är uppbyggda med platshållare som [quality] och [audioId].',
+    schema: ListOnDemandAudioTemplatesSchema,
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+    handler: listOnDemandAudioTemplates,
+  },
+  {
+    name: 'list_live_audio_templates',
+    description: 'Hämta URL-mallar för live-ljud (direktsändning). Mallarna visar hur ljudlänkar är uppbyggda med platshållare som [quality] och [channelid].',
+    schema: ListLiveAudioTemplatesSchema,
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+    handler: listLiveAudioTemplates,
   },
 ];
