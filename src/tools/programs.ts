@@ -19,10 +19,19 @@ const SearchProgramsSchema = z.object({
   sort: z.string().optional().describe('Sortering (t.ex. "name", "name+desc")'),
   page: z.number().min(1).optional(),
   size: z.number().min(1).max(100).optional(),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
 });
 
 const GetProgramSchema = z.object({
   programId: z.number().describe('Program-ID'),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
+});
+
+const ListProgramCategoriesSchema = z.object({
+  categoryId: z.number().optional().describe('Hämta specifik kategori med detta ID'),
+  page: z.number().min(1).optional(),
+  size: z.number().min(1).max(100).optional(),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
 });
 
 const GetProgramScheduleSchema = z.object({
@@ -31,6 +40,26 @@ const GetProgramScheduleSchema = z.object({
   toDate: z.string().optional().describe('Till datum (YYYY-MM-DD)'),
   page: z.number().min(1).optional(),
   size: z.number().min(1).max(100).optional(),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
+});
+
+const ListBroadcastsSchema = z.object({
+  programId: z.number().describe('Program-ID'),
+  page: z.number().min(1).optional(),
+  size: z.number().min(1).max(100).optional(),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
+});
+
+const ListPodfilesSchema = z.object({
+  programId: z.number().describe('Program-ID'),
+  page: z.number().min(1).optional(),
+  size: z.number().min(1).max(100).optional(),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
+});
+
+const GetPodfileSchema = z.object({
+  podfileId: z.number().describe('Poddfil-ID'),
+  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
 });
 
 // Tool handlers
@@ -46,27 +75,48 @@ export async function searchPrograms(params: z.infer<typeof SearchProgramsSchema
 }
 
 export async function getProgram(params: z.infer<typeof GetProgramSchema>) {
-  const { programId } = params;
+  const { programId, format } = params;
 
-  const response = await srClient.fetch<any>(`programs/${programId}`);
+  const queryParams: any = {};
+  if (format) queryParams.format = format;
+
+  const response = await srClient.fetch<any>(`programs/${programId}`, queryParams);
 
   return {
     program: response.program || response,
   };
 }
 
-export async function listProgramCategories() {
-  const response = await srClient.fetch<PaginatedResponse<SRProgramCategory>>('programcategories', {
-    pagination: false,
-  });
+export async function listProgramCategories(params: z.infer<typeof ListProgramCategoriesSchema>) {
+  const { categoryId, page, size, format } = params;
+
+  // If specific category requested
+  if (categoryId !== undefined) {
+    const queryParams: any = {};
+    if (format) queryParams.format = format;
+
+    const response = await srClient.fetch<any>(`programcategories/${categoryId}`, queryParams);
+    return {
+      category: response.programcategory || response,
+    };
+  }
+
+  // Otherwise list all categories
+  const queryParams: any = {};
+  if (page !== undefined) queryParams.page = page;
+  if (size !== undefined) queryParams.size = size;
+  if (format) queryParams.format = format;
+
+  const response = await srClient.fetch<PaginatedResponse<SRProgramCategory>>('programcategories', queryParams);
 
   return {
     categories: (response as any).programcategories || [],
+    pagination: response.pagination,
   };
 }
 
 export async function getProgramSchedule(params: z.infer<typeof GetProgramScheduleSchema>) {
-  const { programId, fromDate, toDate, page, size } = params;
+  const { programId, fromDate, toDate, page, size, format } = params;
 
   const queryParams: any = {
     programid: programId,
@@ -76,12 +126,65 @@ export async function getProgramSchedule(params: z.infer<typeof GetProgramSchedu
 
   if (fromDate) queryParams.fromdate = fromDate;
   if (toDate) queryParams.todate = toDate;
+  if (format) queryParams.format = format;
 
   const response = await srClient.fetch<any>('scheduledepisodes', queryParams);
 
   return {
     schedule: (response as any).schedule || [],
     pagination: response.pagination,
+  };
+}
+
+export async function listBroadcasts(params: z.infer<typeof ListBroadcastsSchema>) {
+  const { programId, page, size, format } = params;
+
+  const queryParams: any = {
+    programid: programId,
+    page,
+    size,
+  };
+
+  if (format) queryParams.format = format;
+
+  const response = await srClient.fetch<any>('broadcasts', queryParams);
+
+  return {
+    broadcasts: (response as any).broadcasts || [],
+    pagination: response.pagination,
+    programName: (response as any).name,
+  };
+}
+
+export async function listPodfiles(params: z.infer<typeof ListPodfilesSchema>) {
+  const { programId, page, size, format } = params;
+
+  const queryParams: any = {
+    programid: programId,
+    page,
+    size,
+  };
+
+  if (format) queryParams.format = format;
+
+  const response = await srClient.fetch<any>('podfiles', queryParams);
+
+  return {
+    podfiles: (response as any).podfiles || [],
+    pagination: response.pagination,
+  };
+}
+
+export async function getPodfile(params: z.infer<typeof GetPodfileSchema>) {
+  const { podfileId, format } = params;
+
+  const queryParams: any = {};
+  if (format) queryParams.format = format;
+
+  const response = await srClient.fetch<any>(`podfiles/${podfileId}`, queryParams);
+
+  return {
+    podfile: response.podfile || response,
   };
 }
 
@@ -126,6 +229,11 @@ export const programTools = [
           type: 'number',
           description: 'Antal per sida (max 100)',
         },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
+        },
       },
     },
     handler: searchPrograms,
@@ -141,6 +249,11 @@ export const programTools = [
           type: 'number',
           description: 'Program-ID',
         },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
+        },
       },
       required: ['programId'],
     },
@@ -148,10 +261,29 @@ export const programTools = [
   },
   {
     name: 'list_program_categories',
-    description: 'Lista alla programkategorier i Sveriges Radio (t.ex. Nyheter, Musik, Sport, Kultur, Samhälle).',
+    description: 'Lista alla programkategorier i Sveriges Radio (t.ex. Nyheter, Musik, Sport, Kultur, Samhälle) eller hämta en specifik kategori.',
+    schema: ListProgramCategoriesSchema,
     inputSchema: {
       type: 'object',
-      properties: {},
+      properties: {
+        categoryId: {
+          type: 'number',
+          description: 'Hämta specifik kategori med detta ID (valfri)',
+        },
+        page: {
+          type: 'number',
+          description: 'Sidnummer',
+        },
+        size: {
+          type: 'number',
+          description: 'Antal per sida',
+        },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
+        },
+      },
     },
     handler: listProgramCategories,
   },
@@ -182,9 +314,93 @@ export const programTools = [
           type: 'number',
           description: 'Antal per sida',
         },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
+        },
       },
       required: ['programId'],
     },
     handler: getProgramSchedule,
+  },
+  {
+    name: 'list_broadcasts',
+    description: 'Lista alla tillgängliga sändningar för ett specifikt program. Sändningar är tillgängliga i 30 dagar efter publicering.',
+    schema: ListBroadcastsSchema,
+    inputSchema: {
+      type: 'object',
+      properties: {
+        programId: {
+          type: 'number',
+          description: 'Program-ID',
+        },
+        page: {
+          type: 'number',
+          description: 'Sidnummer',
+        },
+        size: {
+          type: 'number',
+          description: 'Antal per sida',
+        },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
+        },
+      },
+      required: ['programId'],
+    },
+    handler: listBroadcasts,
+  },
+  {
+    name: 'list_podfiles',
+    description: 'Lista alla tillgängliga poddfiler för ett specifikt program. Returnerar poddfilernas metadata inklusive URL för nedladdning.',
+    schema: ListPodfilesSchema,
+    inputSchema: {
+      type: 'object',
+      properties: {
+        programId: {
+          type: 'number',
+          description: 'Program-ID',
+        },
+        page: {
+          type: 'number',
+          description: 'Sidnummer',
+        },
+        size: {
+          type: 'number',
+          description: 'Antal per sida',
+        },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
+        },
+      },
+      required: ['programId'],
+    },
+    handler: listPodfiles,
+  },
+  {
+    name: 'get_podfile',
+    description: 'Hämta en specifik poddfil med fullständig information inklusive URL, storlek, längd och publiceringsdatum.',
+    schema: GetPodfileSchema,
+    inputSchema: {
+      type: 'object',
+      properties: {
+        podfileId: {
+          type: 'number',
+          description: 'Poddfil-ID',
+        },
+        format: {
+          type: 'string',
+          enum: ['xml', 'json'],
+          description: 'Svarsformat (default: json)',
+        },
+      },
+      required: ['podfileId'],
+    },
+    handler: getPodfile,
   },
 ];
