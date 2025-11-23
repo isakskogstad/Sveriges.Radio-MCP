@@ -6,43 +6,86 @@
 import { z } from 'zod';
 import { srClient } from '../lib/sr-client.js';
 import type { PaginatedResponse, SREpisode } from '../types/sr-api.js';
+import {
+  programIdSchema,
+  episodeIdSchema,
+  iso8601DateSchema,
+  audioQualitySchema,
+  formatSchema,
+  paginationSchema,
+  searchQuerySchema,
+  channelIdSchema,
+} from '../lib/validation.js';
 
 // Schemas
-const ListEpisodesSchema = z.object({
-  programId: z.number().describe('Program-ID'),
-  fromDate: z.string().optional().describe('Från datum (YYYY-MM-DD)'),
-  toDate: z.string().optional().describe('Till datum (YYYY-MM-DD)'),
-  audioQuality: z.enum(['low', 'normal', 'hi']).optional().describe('Ljudkvalitet'),
-  page: z.number().min(1).optional(),
-  size: z.number().min(1).max(100).optional(),
-  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
-});
+const ListEpisodesSchema = z
+  .object({
+    programId: programIdSchema.describe('Program-ID'),
+    fromDate: iso8601DateSchema.optional().describe('Från datum (YYYY-MM-DD)'),
+    toDate: iso8601DateSchema.optional().describe('Till datum (YYYY-MM-DD)'),
+    audioQuality: audioQualitySchema.optional().describe('Ljudkvalitet'),
+    page: paginationSchema.page,
+    size: paginationSchema.size,
+    format: formatSchema.optional().describe('Svarsformat (default: json)'),
+  })
+  .refine(
+    (data) => {
+      if (data.fromDate && data.toDate) {
+        return new Date(data.fromDate) <= new Date(data.toDate);
+      }
+      return true;
+    },
+    {
+      message: 'fromDate must be before or equal to toDate',
+      path: ['toDate'],
+    }
+  );
 
 const SearchEpisodesSchema = z.object({
-  query: z.string().describe('Sökterm'),
-  channelId: z.number().optional().describe('Filtrera på kanal'),
-  programId: z.number().optional().describe('Filtrera på program'),
-  page: z.number().min(1).optional(),
-  size: z.number().min(1).max(100).optional(),
-  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
+  query: searchQuerySchema.describe('Sökterm'),
+  channelId: channelIdSchema.optional().describe('Filtrera på kanal'),
+  programId: programIdSchema.optional().describe('Filtrera på program'),
+  page: paginationSchema.page,
+  size: paginationSchema.size,
+  format: formatSchema.optional().describe('Svarsformat (default: json)'),
 });
 
 const GetEpisodeSchema = z.object({
-  episodeId: z.number().describe('Avsnitt-ID'),
-  audioQuality: z.enum(['low', 'normal', 'hi']).optional().describe('Ljudkvalitet'),
-  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
+  episodeId: episodeIdSchema.describe('Avsnitt-ID'),
+  audioQuality: audioQualitySchema.optional().describe('Ljudkvalitet'),
+  format: formatSchema.optional().describe('Svarsformat (default: json)'),
 });
 
 const GetEpisodesBatchSchema = z.object({
-  episodeIds: z.string().describe('Kommaseparerade avsnitt-ID (t.ex. "123,456,789")'),
-  audioQuality: z.enum(['low', 'normal', 'hi']).optional(),
-  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
+  episodeIds: z
+    .string()
+    .describe('Kommaseparerade avsnitt-ID (t.ex. "123,456,789"). Max 50 ID per anrop')
+    .refine(
+      (val) => {
+        const ids = val.split(',').map((id) => id.trim()).filter(Boolean);
+        return ids.length > 0 && ids.length <= 50;
+      },
+      {
+        message: 'episodeIds must contain between 1 and 50 comma-separated IDs',
+      }
+    )
+    .refine(
+      (val) => {
+        const ids = val.split(',').map((id) => id.trim()).filter(Boolean);
+        return ids.every((id) => /^\d+$/.test(id));
+      },
+      {
+        message: 'All episode IDs must be valid positive integers',
+      }
+    ),
+  audioQuality: audioQualitySchema.optional(),
+  format: formatSchema.optional().describe('Svarsformat (default: json)'),
 });
 
 const GetLatestEpisodeSchema = z.object({
-  programId: z.number().describe('Program-ID'),
-  audioQuality: z.enum(['low', 'normal', 'hi']).optional(),
-  format: z.enum(['xml', 'json']).optional().describe('Svarsformat (default: json)'),
+  programId: programIdSchema.describe('Program-ID'),
+  audioQuality: audioQualitySchema.optional(),
+  format: formatSchema.optional().describe('Svarsformat (default: json)'),
 });
 
 // Tool handlers
@@ -106,14 +149,46 @@ export async function getEpisode(params: z.infer<typeof GetEpisodeSchema>) {
 export async function getEpisodesBatch(params: z.infer<typeof GetEpisodesBatchSchema>) {
   const { episodeIds, audioQuality, format } = params;
 
-  const queryParams: any = { ids: episodeIds };
-  if (audioQuality) queryParams.audioquality = audioQuality;
-  if (format) queryParams.format = format;
+  // Parse and validate individual IDs
+  const ids = episodeIds
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean)
+    .map((id) => parseInt(id, 10));
 
-  const response = await srClient.fetch<PaginatedResponse<SREpisode>>('episodes/getlist', queryParams);
+  const results: Array<{ id: number; data: any }> = [];
+  const errors: Array<{ id: number; error: string }> = [];
+
+  // Fetch each episode individually to support partial success
+  for (const id of ids) {
+    try {
+      const queryParams: any = { id };
+      if (audioQuality) queryParams.audioquality = audioQuality;
+      if (format) queryParams.format = format;
+
+      const response = await srClient.fetch<any>('episodes/get', queryParams);
+      results.push({
+        id,
+        data: response.episode || response,
+      });
+    } catch (error: any) {
+      errors.push({
+        id,
+        error: error.message || 'Episode not found',
+      });
+    }
+  }
 
   return {
-    episodes: (response as any).episodes || [],
+    success: errors.length === 0,
+    results,
+    errors,
+    metadata: {
+      total: ids.length,
+      successful: results.length,
+      failed: errors.length,
+      maxBatchSize: 50,
+    },
   };
 }
 
@@ -236,14 +311,14 @@ export const episodeTools = [
   },
   {
     name: 'get_episodes_batch',
-    description: 'Hämta flera avsnitt samtidigt i ett anrop (effektivt för att hämta flera episoder).',
+    description: 'Hämta flera avsnitt samtidigt med partial success support. Returnerar både lyckade resultat och fel för varje ID. Max 50 ID per anrop.',
     schema: GetEpisodesBatchSchema,
     inputSchema: {
       type: 'object',
       properties: {
         episodeIds: {
           type: 'string',
-          description: 'Kommaseparerade avsnitt-ID, t.ex. "12345,67890,11111"',
+          description: 'Kommaseparerade avsnitt-ID, t.ex. "12345,67890,11111". Max 50 ID.',
         },
         audioQuality: {
           type: 'string',

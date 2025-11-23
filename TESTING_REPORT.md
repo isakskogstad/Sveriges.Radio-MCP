@@ -803,11 +803,40 @@ De flesta problemen är **lätta att åtgärda** och kräver inga stora arkitekt
    - Endpoint-guide med exempel
    - Timezone-hantering (CET/CEST)
 
-### Fas 3: Förbättringar (v1.3) - 🔄 PLANERAD
+### Fas 3: Förbättringar (v1.3) - ✅ KLAR
 
-1. ⏳ Batch partial success handling
-2. ⏳ Förbättrad parametervalidering
-3. ⏳ Dokumentation av sökparametrar
+**Datum:** 2025-11-23
+
+1. ✅ **Batch partial success handling**
+   - `get_episodes_batch` omskriven för partial success
+   - Validering: max 50 IDs, endast integers
+   - Returnerar `{ success, results[], errors[], metadata }`
+   - Per-ID status: lyckade resultat + felmeddelanden
+   - Metadata: total, successful, failed, maxBatchSize
+
+2. ✅ **Förbättrad parametervalidering**
+   - Ny fil: `src/lib/validation.ts`
+   - Zod schemas för vanliga typer:
+     - `iso8601DateSchema` - Datum (YYYY-MM-DD)
+     - `iso8601DateTimeSchema` - Datum+tid (ISO 8601)
+     - `flexibleDateTimeSchema` - Flexibel datum/tid
+     - `channelIdSchema`, `programIdSchema`, `episodeIdSchema`
+     - `paginationSchema` (page, size med limits)
+     - `audioQualitySchema`, `formatSchema`
+     - `categoryIdSchema` (0 = alla kategorier)
+     - `searchQuerySchema` (1-200 tecken)
+   - Datumintervall-validering (fromDate ≤ toDate)
+   - Uppdaterade schemas i `episodes.ts`
+   - Bättre felmeddelanden med tydliga valideringsfel
+
+3. ✅ **Dokumentation av sökparametrar**
+   - Ny fil: `SEARCH_GUIDE.md`
+   - Komplett guide för search_programs, search_episodes, search_all
+   - Default-beteende dokumenterat
+   - Vanliga problem och lösningar
+   - Jämförelsetabell mellan sökverktyg
+   - Bästa praxis och optimeringstips
+   - Programkategorier-tabell
 
 ### Fas 4: Långsiktig Stabilitet (v2.0) - 📅 FRAMTIDA
 
@@ -823,9 +852,10 @@ De flesta problemen är **lätta att åtgärda** och kräver inga stora arkitekt
 - [CHANGELOG.md](CHANGELOG.md) - Versionshistorik
 - [AUTH_SETUP.md](AUTH_SETUP.md) - Autentiseringsguide
 - [DATETIME_FORMAT.md](DATETIME_FORMAT.md) - Datum/tid-format guide
+- [SEARCH_GUIDE.md](SEARCH_GUIDE.md) - Sökparametrar och bästa praxis
 
 ---
 
 **Skapad:** 2025-11-23
-**Uppdaterad:** 2025-11-23 (Fas 2 implementerad)
-**Nästa review:** Efter implementering av Fas 3
+**Uppdaterad:** 2025-11-23 (Fas 3 implementerad)
+**Nästa review:** Vid implementering av Fas 4 eller efter användarfeedback
