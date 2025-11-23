@@ -1,6 +1,6 @@
 # Sveriges Radio MCP Server 🎙️
 
-> Modern MCP server för Sveriges Radios öppna API - tillgång till svenska radioprogram, podcasts, livestreams och nyheter.
+> Modern MCP server för Sveriges Radios öppna API - tillgång till svenska radioprogram, podcasts, livestreams, spellistor och nyheter.
 
 [![MCP Protocol](https://img.shields.io/badge/MCP-Protocol-blue)](https://modelcontextprotocol.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -12,6 +12,7 @@
 🎵 **Ljudinnehåll** - Direktåtkomst till MP3-filer för streaming och nedladdning
 📊 **Metadata** - Detaljerad information om program, kanaler och avsnitt
 📡 **Live-data** - Realtidsinformation om vad som sänds just nu
+🎼 **Spellistor** - Komplett musikhistorik med artist, titel, album, kompositör
 🚗 **Trafikinfo** - Aktuella trafikmeddelanden med geografiska koordinater
 🔍 **Sök** - Fulltextsök i program, avsnitt och innehåll
 
@@ -19,64 +20,152 @@
 
 ## 🚀 Snabbstart
 
+### Remote Server (Rekommenderat)
+
+**Ingen installation behövs!** Använd vår hostade server:
+
+```
+https://sverigesradio-mcp.onrender.com/mcp
+```
+
+#### Claude Desktop / Claude Code
+
+Lägg till i din Claude MCP-konfiguration (`claude_desktop_config.json` eller `.claude/config.json`):
+
+```json
+{
+  "mcpServers": {
+    "sverigesradio": {
+      "url": "https://sverigesradio-mcp.onrender.com/mcp"
+    }
+  }
+}
+```
+
+#### Cursor
+
+Lägg till i `.cursorrules` eller MCP-konfiguration:
+
+```json
+{
+  "mcpServers": {
+    "sverigesradio": {
+      "transportType": "streamable-http",
+      "url": "https://sverigesradio-mcp.onrender.com/mcp"
+    }
+  }
+}
+```
+
+#### Andra MCP-klienter
+
+Använd **StreamableHTTP transport** (2025-03-26 spec):
+- **Endpoint:** `https://sverigesradio-mcp.onrender.com/mcp`
+- **Auth:** Ingen (öppen API)
+- **Format:** JSON
+
+---
+
 ### Lokal Installation
+
+#### Via npm
+
 ```bash
 npm install -g sverigesradio-mcp
 sr-mcp
 ```
 
-### HTTP Server med Auth
+#### Claude Code/Desktop (lokal)
+
 ```bash
-cp .env.example .env
-echo "MCP_AUTH_TOKEN=your-secret-token" >> .env
-npm run start:streamable
+# Installera
+npm install -g sverigesradio-mcp
+
+# Lägg till i Claude-konfiguration
+claude mcp add sverigesradio npx sr-mcp
 ```
 
-**Endpoints:**
-- `POST/GET /mcp` - Modern StreamableHTTP endpoint (rekommenderas)
-- `GET /sse` - Legacy SSE endpoint
-- `GET /health` - Health check
+#### Cursor (lokal)
 
-**Auth:**
+```json
+{
+  "mcpServers": {
+    "sverigesradio": {
+      "command": "npx",
+      "args": ["sr-mcp"]
+    }
+  }
+}
+```
+
+#### Från källkod
+
 ```bash
-curl -H "Authorization: Bearer your-token" \
-     -H "Accept: application/json, text/event-stream" \
-     https://your-server.com/mcp
+git clone https://github.com/KSAklfszf921/sverigesradio-mcp.git
+cd sverigesradio-mcp
+npm install
+npm run build
+npm start
 ```
 
 ---
 
-## 🛠️ Verktyg
+## 🛠️ Verktyg (32 st)
 
-### Real-time & Live
+### Real-time & Live (3 tools)
 - `get_all_rightnow` - Vad som sänds på alla kanaler nu
 - `get_channel_rightnow` - Aktuellt program på specifik kanal
-- `get_playlist_rightnow` - Vilken låt som spelas just nu
-
-### Musik & Spellistor 🎵
 - `get_playlist_rightnow` - Låt som spelas just nu (föregående, nuvarande, nästa)
+
+### Musik & Spellistor (4 tools) 🎵
+- `get_playlist_rightnow` - Låt som spelas just nu
 - `get_channel_playlist` - Låthistorik för kanal i tidsintervall
 - `get_program_playlist` - Låthistorik för program i tidsintervall
 - `get_episode_playlist` - Komplett spellista för programavsnitt
 
 *Alla låtar inkluderar: titel, artist, kompositör, album, skivbolag, producent, textförfattare, dirigent och tidsstämplar*
 
-### Program & Avsnitt
+### Program & Poddar (7 tools)
 - `search_programs` - Sök efter program
 - `get_program` - Hämta programdetaljer
+- `list_program_categories` - Alla 15 programkategorier
+- `get_program_schedule` - När program sänds
+- `list_broadcasts` - Tillgängliga sändningar (30 dagar)
+- `list_podfiles` - Poddfiler för program
+- `get_podfile` - Specifik poddfil med metadata
+
+### Avsnitt (5 tools)
 - `list_episodes` - Lista avsnitt från program
-- `get_episode` - Hämta specifikt avsnitt med ljudfiler
+- `search_episodes` - Fulltextsök i avsnitt
+- `get_episode` - Specifikt avsnitt med ljudfiler
+- `get_episodes_batch` - Hämta flera avsnitt samtidigt
+- `get_latest_episode` - Senaste avsnittet för program
 
-### Nyheter & Trafik
-- `get_latest_news_episodes` - Senaste nyhetsutsändningar
-- `get_traffic_messages` - Trafikmeddelanden per område
-- `list_news_programs` - Översikt av nyhetsprogram
-
-### Översikt & Sökning
+### Kanaler (2 tools)
 - `list_channels` - Alla kanaler (P1-P4, lokala stationer)
-- `get_channel_schedule` - Tablå för vald kanal
-- `search_all` - Global sökning
-- `list_program_categories` - Programkategorier
+- `get_channel_rightnow` - Vad som sänds nu
+
+### Tablå & Schema (3 tools)
+- `get_channel_schedule` - Tablå för vald kanal och datum
+- `get_program_broadcasts` - Kommande sändningar för program
+- `get_all_rightnow` - Översikt alla kanaler
+
+### Nyheter (2 tools)
+- `list_news_programs` - Översikt av nyhetsprogram
+- `get_latest_news_episodes` - Senaste nyhetsutsändningar
+
+### Trafik (2 tools)
+- `get_traffic_messages` - Trafikmeddelanden per område
+- `get_traffic_areas` - Trafikområden (med GPS-sökning)
+
+### Övrigt (7 tools)
+- `search_all` - Global sökning (program + avsnitt + kanaler)
+- `get_recently_published` - Senast publicerat innehåll
+- `get_top_stories` - Featured content från SR
+- `list_extra_broadcasts` - Extrasändningar (sport, special events)
+- `get_episode_group` - Samling av avsnitt (t.ex. "Kända kriminalfall")
+- `list_ondemand_audio_templates` - URL-mallar för podcast
+- `list_live_audio_templates` - URL-mallar för live streams
 
 ---
 
@@ -98,19 +187,25 @@ Hämta `get_traffic_messages` för specifika geografiska områden och skapa real
 
 ## 📚 Resources (4 st)
 
-- `sr://api/info` - API-capabilities, versioner, rate limits
-- `sr://channels/all` - Komplett kanallista med ID:n
-- `sr://audio/quality-guide` - Ljudkvalitet och format
-- `sr://categories/programs` - Alla 15 programkategorier
+Resources ger snabb tillgång till referensdata:
+
+- `sr://api/info` - API-capabilities, versioner, rate limits, caching-info
+- `sr://channels/all` - Komplett kanallista med ID:n (P1-P4, lokalradiostationer)
+- `sr://audio/quality-guide` - Ljudkvalitet och format (hi/normal/low, streaming vs download)
+- `sr://categories/programs` - Alla 15 programkategorier med beskrivningar
+
+---
 
 ## 🎯 Prompts (6 st)
 
+Förbyggda workflows för vanliga uppgifter:
+
 - `find-podcast` - Hitta podcasts efter ämne
 - `whats-on-now` - Vad som sänds just nu
+- `whats-playing-now` - Aktuell låt på musikkanaler (perfekt för P2!)
 - `traffic-nearby` - Trafikläget i ditt område
 - `news-briefing` - Senaste nyheterna
 - `explore-schedule` - Bläddra i tablån
-- `whats-playing-now` - Aktuell låt på musikkanaler
 
 ---
 
@@ -129,9 +224,10 @@ npm test             # Run tests
 
 **Sveriges Radio Open API v2**
 - Bas-URL: `https://api.sr.se/api/v2/`
-- Format: JSON
+- Format: JSON/XML
 - Auth: Ingen (publik API)
 - Caching: HTTP ETags (304 Not Modified)
+- Dokumentation: [api.sr.se/api/documentation/v2](https://api.sr.se/api/documentation/v2/)
 
 ---
 
