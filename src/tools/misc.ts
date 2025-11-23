@@ -161,20 +161,106 @@ export async function searchAll(params: z.infer<typeof SearchAllSchema>) {
 }
 
 export async function listOnDemandAudioTemplates(_params: z.infer<typeof ListOnDemandAudioTemplatesSchema>) {
-  const response = await srClient.fetch<any>('audiourltemplates/ondemandaudiotypes', {});
+  // SR API's template endpoint returns empty, so we provide documented templates
+  const templates = [
+    {
+      type: 'ondemand',
+      format: 'mp3',
+      quality: 'high',
+      template: 'https://www.sverigesradio.se/topsy/ljudfil/srapi/{audioId}.mp3',
+      parameters: {
+        audioId: 'Audio file ID from episode/broadcast (integer)',
+      },
+      example: 'https://www.sverigesradio.se/topsy/ljudfil/srapi/12345678.mp3',
+    },
+    {
+      type: 'ondemand',
+      format: 'm4a',
+      quality: 'high',
+      template: 'https://www.sverigesradio.se/topsy/ljudfil/srapi/{audioId}-hi.m4a',
+      parameters: {
+        audioId: 'Audio file ID from episode/broadcast (integer)',
+      },
+      example: 'https://www.sverigesradio.se/topsy/ljudfil/srapi/12345678-hi.m4a',
+    },
+    {
+      type: 'ondemand',
+      format: 'm4a',
+      quality: 'medium',
+      template: 'https://www.sverigesradio.se/topsy/ljudfil/srapi/{audioId}-med.m4a',
+      parameters: {
+        audioId: 'Audio file ID from episode/broadcast (integer)',
+      },
+      example: 'https://www.sverigesradio.se/topsy/ljudfil/srapi/12345678-med.m4a',
+    },
+    {
+      type: 'ondemand',
+      format: 'm4a',
+      quality: 'low',
+      template: 'https://www.sverigesradio.se/topsy/ljudfil/srapi/{audioId}-lo.m4a',
+      parameters: {
+        audioId: 'Audio file ID from episode/broadcast (integer)',
+      },
+      example: 'https://www.sverigesradio.se/topsy/ljudfil/srapi/12345678-lo.m4a',
+    },
+  ];
 
   return {
-    templates: (response as any).audiourltemplates || [],
-    description: 'URL-mallar för on-demand-ljud. Använd [quality]=hi/normal/lo, [audioId]=avsnitt-ID',
+    templates,
+    description: 'URL-mallar för on-demand-ljud (podcasts/avsnitt). Ersätt {audioId} med ljud-ID från episode eller broadcast.',
+    note: 'Audio ID finns i episode.listenpodfile.id, episode.downloadpodfile.id, eller broadcast.broadcastfiles[].id',
   };
 }
 
 export async function listLiveAudioTemplates(_params: z.infer<typeof ListLiveAudioTemplatesSchema>) {
-  const response = await srClient.fetch<any>('audiourltemplates/liveaudiotypes', {});
+  // SR API's template endpoint returns empty, so we provide documented templates
+  const templates = [
+    {
+      type: 'live',
+      format: 'mp3',
+      quality: 'high',
+      template: 'https://sverigesradio.se/topsy/direkt/srapi/{channelId}-hi.mp3',
+      parameters: {
+        channelId: 'Channel ID (integer)',
+      },
+      example: 'https://sverigesradio.se/topsy/direkt/srapi/163-hi.mp3',
+    },
+    {
+      type: 'live',
+      format: 'mp3',
+      quality: 'medium',
+      template: 'https://sverigesradio.se/topsy/direkt/srapi/{channelId}-med.mp3',
+      parameters: {
+        channelId: 'Channel ID (integer)',
+      },
+      example: 'https://sverigesradio.se/topsy/direkt/srapi/163-med.mp3',
+    },
+    {
+      type: 'live',
+      format: 'mp3',
+      quality: 'low',
+      template: 'https://sverigesradio.se/topsy/direkt/srapi/{channelId}-lo.mp3',
+      parameters: {
+        channelId: 'Channel ID (integer)',
+      },
+      example: 'https://sverigesradio.se/topsy/direkt/srapi/163-lo.mp3',
+    },
+    {
+      type: 'live',
+      format: 'm3u',
+      quality: 'high',
+      template: 'https://sverigesradio.se/topsy/direkt/srapi/{channelId}-hi.m3u',
+      parameters: {
+        channelId: 'Channel ID (integer)',
+      },
+      example: 'https://sverigesradio.se/topsy/direkt/srapi/163-hi.m3u',
+    },
+  ];
 
   return {
-    templates: (response as any).audiourltemplates || [],
-    description: 'URL-mallar för live-ljud. Använd [quality]=hi/normal/lo, [channelid]=kanal-ID',
+    templates,
+    description: 'URL-mallar för live-ljud (direktsändningar). Ersätt {channelId} med kanal-ID.',
+    note: 'Kanal-ID finns i channel.id från list_channels eller get_channel. Exempel: P1=132, P2=163, P3=164, P4 Stockholm=701',
   };
 }
 

@@ -87,12 +87,28 @@ export async function getPlaylistRightNow(params: z.infer<typeof GetPlaylistRigh
 
   const response = await srClient.fetch<SRPlaylist>('playlists/rightnow', queryParams);
 
+  // Determine if music metadata is available
+  const hasMusicMetadata = !!(response.song || response.nextsong || response.previoussong);
+
+  // Provide clear metadata about content type
+  const metadata: any = {
+    hasMusicMetadata,
+  };
+
+  if (!hasMusicMetadata) {
+    metadata.reason = response.channel ? 'speech_channel' : 'no_metadata_available';
+    metadata.contentType = 'speech';
+  } else {
+    metadata.contentType = 'music';
+  }
+
   return {
     copyright: response.copyright,
     currentSong: response.song || null,
     nextSong: response.nextsong || null,
     previousSong: response.previoussong || null,
-    channel: response.channel || null,
+    channel: response.channel || { id: channelId, name: 'Unknown' },
+    metadata,
     timestamp: new Date().toISOString(),
   };
 }
@@ -131,15 +147,40 @@ export async function getChannelPlaylist(params: z.infer<typeof GetChannelPlayli
     queryParams.format = format;
   }
 
-  const response = await srClient.fetch<SRSongList>('playlists/getplaylistbychannelid', queryParams);
+  try {
+    const response = await srClient.fetch<SRSongList>('playlists/getplaylistbychannelid', queryParams);
+    const songs = response.song || [];
 
-  return {
-    copyright: response.copyright,
-    songs: response.song || [],
-    channelId,
-    startDateTime: startDateTime || 'today',
-    endDateTime: endDateTime || 'startDateTime + 1 day',
-  };
+    return {
+      copyright: response.copyright,
+      songs,
+      metadata: {
+        hasMusicMetadata: songs.length > 0,
+        count: songs.length,
+      },
+      channelId,
+      startDateTime: startDateTime || 'today',
+      endDateTime: endDateTime || 'startDateTime + 1 day',
+    };
+  } catch (error: any) {
+    // If 404, return empty result instead of error (no playlist data for interval)
+    if (error.code === 'NOT_FOUND') {
+      return {
+        copyright: 'Sveriges Radio',
+        songs: [],
+        metadata: {
+          hasMusicMetadata: false,
+          count: 0,
+          reason: 'no_data_for_interval',
+          note: 'Channel may be speech-only or no songs played in specified time range',
+        },
+        channelId,
+        startDateTime: startDateTime || 'today',
+        endDateTime: endDateTime || 'startDateTime + 1 day',
+      };
+    }
+    throw error;
+  }
 }
 
 /**
@@ -175,15 +216,40 @@ export async function getProgramPlaylist(params: z.infer<typeof GetProgramPlayli
     queryParams.format = format;
   }
 
-  const response = await srClient.fetch<SRSongList>('playlists/getplaylistbyprogramid', queryParams);
+  try {
+    const response = await srClient.fetch<SRSongList>('playlists/getplaylistbyprogramid', queryParams);
+    const songs = response.song || [];
 
-  return {
-    copyright: response.copyright,
-    songs: response.song || [],
-    programId,
-    startDateTime: startDateTime || 'today',
-    endDateTime: endDateTime || 'startDateTime + 1 day',
-  };
+    return {
+      copyright: response.copyright,
+      songs,
+      metadata: {
+        hasMusicMetadata: songs.length > 0,
+        count: songs.length,
+      },
+      programId,
+      startDateTime: startDateTime || 'today',
+      endDateTime: endDateTime || 'startDateTime + 1 day',
+    };
+  } catch (error: any) {
+    // If 404, return empty result instead of error (speech program or no data)
+    if (error.code === 'NOT_FOUND') {
+      return {
+        copyright: 'Sveriges Radio',
+        songs: [],
+        metadata: {
+          hasMusicMetadata: false,
+          count: 0,
+          reason: 'no_data_for_interval',
+          note: 'Program may be speech-only or no songs played in specified time range',
+        },
+        programId,
+        startDateTime: startDateTime || 'today',
+        endDateTime: endDateTime || 'startDateTime + 1 day',
+      };
+    }
+    throw error;
+  }
 }
 
 /**
@@ -203,13 +269,36 @@ export async function getEpisodePlaylist(params: z.infer<typeof GetEpisodePlayli
     queryParams.format = format;
   }
 
-  const response = await srClient.fetch<SRSongList>('playlists/getplaylistbyepisodeid', queryParams);
+  try {
+    const response = await srClient.fetch<SRSongList>('playlists/getplaylistbyepisodeid', queryParams);
+    const songs = response.song || [];
 
-  return {
-    copyright: response.copyright,
-    songs: response.song || [],
-    episodeId,
-  };
+    return {
+      copyright: response.copyright,
+      songs,
+      metadata: {
+        hasMusicMetadata: songs.length > 0,
+        count: songs.length,
+      },
+      episodeId,
+    };
+  } catch (error: any) {
+    // If 404, return empty result instead of error (speech episode)
+    if (error.code === 'NOT_FOUND') {
+      return {
+        copyright: 'Sveriges Radio',
+        songs: [],
+        metadata: {
+          hasMusicMetadata: false,
+          count: 0,
+          reason: 'speech_episode',
+          note: 'Episode does not contain music metadata',
+        },
+        episodeId,
+      };
+    }
+    throw error;
+  }
 }
 
 // ========================================
