@@ -25,10 +25,18 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import http from 'http';
 import { randomUUID } from 'crypto';
+import { readFile } from 'fs/promises';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { marked } from 'marked';
 import { allTools } from './tools/index.js';
 import { allResources, resourceContents } from './resources/index.js';
 import { allPrompts, promptMessages } from './prompts/index.js';
 import { asJsonContent, formatErrorPayload, parseArgs } from './lib/tool-utils.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const PROJECT_ROOT = join(__dirname, '..');
 
 const PORT = process.env.PORT || 3000;
 const AUTH_TOKEN = process.env.MCP_AUTH_TOKEN; // Optional token authentication
@@ -347,6 +355,166 @@ async function createAndConnectTransport(
 }
 
 /**
+ * Render README.md as HTML
+ */
+async function renderReadme(): Promise<string> {
+  try {
+    const readmePath = join(PROJECT_ROOT, 'README.md');
+    const markdown = await readFile(readmePath, 'utf-8');
+    const html = await marked.parse(markdown);
+
+    return `<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sveriges Radio MCP Server</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #24292f;
+      background: #ffffff;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+    }
+    h1 {
+      font-size: 2rem;
+      border-bottom: 1px solid #d0d7de;
+      padding-bottom: 0.3rem;
+      margin-bottom: 1rem;
+    }
+    h2 {
+      font-size: 1.5rem;
+      border-bottom: 1px solid #d0d7de;
+      padding-bottom: 0.3rem;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+    h3 {
+      font-size: 1.25rem;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    p {
+      margin-bottom: 1rem;
+    }
+    ul, ol {
+      margin-bottom: 1rem;
+      padding-left: 2rem;
+    }
+    li {
+      margin-bottom: 0.25rem;
+    }
+    code {
+      background: #f6f8fa;
+      padding: 0.2em 0.4em;
+      border-radius: 6px;
+      font-size: 85%;
+      font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+    }
+    pre {
+      background: #f6f8fa;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: 100%;
+    }
+    a {
+      color: #0969da;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+    blockquote {
+      border-left: 4px solid #d0d7de;
+      padding-left: 1rem;
+      margin-bottom: 1rem;
+      color: #57606a;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #d0d7de;
+      margin: 2rem 0;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+    th, td {
+      border: 1px solid #d0d7de;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    th {
+      background: #f6f8fa;
+      font-weight: 600;
+    }
+    .badge {
+      display: inline-block;
+      margin-right: 0.5rem;
+    }
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem 0.5rem;
+      }
+      .container {
+        padding: 1rem;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      h2 {
+        font-size: 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    ${html}
+  </div>
+</body>
+</html>`;
+  } catch (error) {
+    console.error('Error rendering README:', error);
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Error</title>
+</head>
+<body>
+  <h1>Error Loading README</h1>
+  <p>Could not load README.md</p>
+</body>
+</html>`;
+  }
+}
+
+/**
  * HTTP Server with support for both modern and legacy transports
  */
 const httpServer = http.createServer(async (req, res) => {
@@ -360,6 +528,14 @@ const httpServer = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
     res.writeHead(200);
     res.end();
+    return;
+  }
+
+  // Root endpoint - serve README as HTML (no auth required)
+  if (req.url === '/' && req.method === 'GET') {
+    const html = await renderReadme();
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
     return;
   }
 
