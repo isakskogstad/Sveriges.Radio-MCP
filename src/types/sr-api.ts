@@ -3,16 +3,52 @@
  * Generated from official API documentation and sverigesradio-api-js
  */
 
+/**
+ * Standardized pagination model (following TESTING_REPORT.md recommendations)
+ * Provides consistent pagination across all endpoints
+ */
+export interface StandardPagination {
+  page: number;
+  pageSize: number;
+  totalHits: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  nextPageUrl?: string;
+  previousPageUrl?: string;
+}
+
+/**
+ * Original SR API pagination format (for internal use)
+ */
+export interface SRPagination {
+  page: number;
+  size: number;
+  totalhits: number;
+  totalpages: number;
+  nextpage?: string;
+  previouspage?: string;
+}
+
+/**
+ * Helper function to convert SR pagination to standard format
+ */
+export function normalizePagination(srPagination: SRPagination): StandardPagination {
+  return {
+    page: srPagination.page,
+    pageSize: srPagination.size,
+    totalHits: srPagination.totalhits,
+    totalPages: srPagination.totalpages,
+    hasNextPage: !!srPagination.nextpage,
+    hasPreviousPage: !!srPagination.previouspage,
+    nextPageUrl: srPagination.nextpage,
+    previousPageUrl: srPagination.previouspage,
+  };
+}
+
 export interface PaginatedResponse<T> {
   copyright: string;
-  pagination: {
-    page: number;
-    size: number;
-    totalhits: number;
-    totalpages: number;
-    nextpage?: string;
-    previouspage?: string;
-  };
+  pagination: SRPagination;
   [key: string]: T[] | any; // Dynamic key for channels, programs, episodes, etc.
 }
 
