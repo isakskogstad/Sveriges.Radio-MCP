@@ -29,6 +29,15 @@
 **Ingen installation krävs!** Använd vår hostade server direkt.
 
 <details>
+<summary><strong>ChatGPT</strong></summary>
+
+1. Gå till **Settings** → **Connected Apps** → **Add Plugin**
+2. Välj "Add custom MCP server"
+3. Ange URL: `https://sverigesradio-mcp.onrender.com/mcp`
+
+</details>
+
+<details>
 <summary><strong>Claude Desktop / Claude Code</strong></summary>
 
 Lägg till i din MCP-konfiguration (`claude_desktop_config.json` eller `.claude.json`):
