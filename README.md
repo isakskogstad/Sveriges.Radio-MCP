@@ -288,7 +288,7 @@ claude mcp add sverigesradio node /path/to/Sveriges.Radio-MCP/dist/index.js
 
 | Kategori | Antal | Beskrivning |
 |----------|-------|-------------|
-| **Tools** | 26 | Program, kanaler, avsnitt, spellistor, nyheter, trafik |
+| **Tools** | 32 | Program, kanaler, avsnitt, spellistor, nyheter, trafik |
 | **Resources** | 4 | API-info, kanallista, ljudkvalitet, kategorier |
 | **Prompts** | 6 | Fördefinierade arbetsflöden för vanliga uppgifter |
 

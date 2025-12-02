@@ -1,5 +1,5 @@
 /**
- * Tool Registry - All 26 SR MCP Tools
+ * Tool Registry - All SR MCP Tools
  */
 
 import { channelTools } from './channels.js';
@@ -11,16 +11,16 @@ import { newsTools } from './news.js';
 import { trafficTools } from './traffic.js';
 import { miscTools } from './misc.js';
 
-// Export all tools (26 total)
+// Export all tools
 export const allTools = [
-  ...channelTools,      // 2 tools
-  ...programTools,      // 4 tools
-  ...episodeTools,      // 5 tools
-  ...scheduleTools,     // 3 tools
-  ...playlistTools,     // 3 tools ⭐ NEW
-  ...newsTools,         // 2 tools
-  ...trafficTools,      // 2 tools
-  ...miscTools,         // 5 tools (toplists, extra, groups, search)
+  ...channelTools,
+  ...programTools,
+  ...episodeTools,
+  ...scheduleTools,
+  ...playlistTools,
+  ...newsTools,
+  ...trafficTools,
+  ...miscTools,
 ];
 
 // Export individual handlers
@@ -32,6 +32,3 @@ export * from './playlists.js';
 export * from './news.js';
 export * from './traffic.js';
 export * from './misc.js';
-
-// Tool count verification
-console.assert(allTools.length === 26, `Expected 26 tools, got ${allTools.length}`);
