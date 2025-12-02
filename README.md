@@ -120,50 +120,63 @@ claude mcp add sverigesradio node /path/to/Sveriges.Radio-MCP/dist/index.js
 
 ---
 
-## Tillgängliga Tools
+## Vad kan du göra? (26 tools)
 
-<details>
-<summary><strong>Realtid & Live (3 tools)</strong></summary>
+När du kopplat MCP-servern till din AI-assistent kan du ställa frågor på naturligt språk. Här är alla funktioner med exempel:
 
-| Tool | Beskrivning |
+<details open>
+<summary><strong>🎙️ Realtid & Live</strong></summary>
+
+**Fråga AI:n:**
+> *"Ge mig en morgonöversikt - vad sänds just nu på P1, P3 och P4"*
+>
+> *"Vilka program sänds live just nu?"*
+
+| Tool | Vad den gör |
 |------|-------------|
 | `get_all_rightnow` | Vad som spelas på ALLA kanaler just nu |
 | `get_channel_rightnow` | Aktuellt program på en specifik kanal |
-| `get_playlist_rightnow` | Aktuell låt (föregående, nuvarande, nästa) med full metadata |
+| `get_playlist_rightnow` | Aktuell låt (föregående, nuvarande, nästa) |
 
 </details>
 
 <details>
-<summary><strong>Musik & Spellistor (4 tools)</strong></summary>
+<summary><strong>🎵 Musik & Spellistor</strong></summary>
 
-| Tool | Beskrivning |
+**Fråga AI:n:**
+> *"Vilken låt spelades på P3 för ungefär 20 minuter sedan?"*
+>
+> *"Visa de senaste 10 låtarna som spelats på P2 Musik"*
+>
+> *"Vilka artister spelas mest på P4?"*
+
+| Tool | Vad den gör |
 |------|-------------|
-| `get_playlist_rightnow` | Låt som spelas just nu på en kanal |
+| `get_playlist_rightnow` | Låt som spelas just nu |
 | `get_channel_playlist` | Låthistorik för en kanal inom tidsintervall |
-| `get_program_playlist` | Låthistorik för ett program inom tidsintervall |
+| `get_program_playlist` | Låthistorik för ett program |
 | `get_episode_playlist` | Komplett spellista för ett avsnitt |
 
-*Alla låtar inkluderar: titel, artist, kompositör, album, skivbolag, producent, textförfattare, dirigent och tidsstämplar*
+*Alla låtar inkluderar: titel, artist, kompositör, album, skivbolag, producent, textförfattare och tidsstämplar*
 
 </details>
 
 <details>
-<summary><strong>Program & Podcasts (4 tools)</strong></summary>
+<summary><strong>🎧 Program & Podcasts</strong></summary>
 
-| Tool | Beskrivning |
+**Fråga AI:n:**
+> *"Jag gillar true crime och dokumentärer. Vilka SR-podcasts passar mig?"*
+>
+> *"Finns det några bra podcasts om svensk historia?"*
+>
+> *"Rekommendera en podd för min 45-minuters pendling"*
+
+| Tool | Vad den gör |
 |------|-------------|
 | `search_programs` | Sök efter program (med relevansranking) |
 | `get_program` | Hämta programdetaljer |
 | `list_program_categories` | Alla 15 programkategorier |
 | `get_program_schedule` | När ett program sänds |
-
-</details>
-
-<details>
-<summary><strong>Sändningar & Podcasts (3 tools)</strong></summary>
-
-| Tool | Beskrivning |
-|------|-------------|
 | `list_broadcasts` | Tillgängliga sändningar (30 dagar) |
 | `list_podfiles` | Podcastfiler för ett program |
 | `get_podfile` | Specifik podcastfil med metadata |
@@ -171,9 +184,14 @@ claude mcp add sverigesradio node /path/to/Sveriges.Radio-MCP/dist/index.js
 </details>
 
 <details>
-<summary><strong>Avsnitt (5 tools)</strong></summary>
+<summary><strong>📺 Avsnitt</strong></summary>
 
-| Tool | Beskrivning |
+**Fråga AI:n:**
+> *"Hitta alla avsnitt av Vetenskapsradion som handlar om AI"*
+>
+> *"Vad handlade senaste avsnittet av Konflikt om?"*
+
+| Tool | Vad den gör |
 |------|-------------|
 | `list_episodes` | Lista avsnitt från ett program |
 | `search_episodes` | Fulltextsökning i avsnitt |
@@ -184,29 +202,32 @@ claude mcp add sverigesradio node /path/to/Sveriges.Radio-MCP/dist/index.js
 </details>
 
 <details>
-<summary><strong>Kanaler (2 tools)</strong></summary>
+<summary><strong>📻 Kanaler & Schema</strong></summary>
 
-| Tool | Beskrivning |
+**Fråga AI:n:**
+> *"Lista SR:s alla lokalradiostationer"*
+>
+> *"Vad går på P1 ikväll mellan 18-21?"*
+>
+> *"När sänds nästa avsnitt av Filosofiska rummet?"*
+
+| Tool | Vad den gör |
 |------|-------------|
 | `list_channels` | Alla kanaler (P1-P4, lokalstationer) |
-| `get_channel_rightnow` | Vad som spelas nu på en kanal |
-
-</details>
-
-<details>
-<summary><strong>Schema (2 tools)</strong></summary>
-
-| Tool | Beskrivning |
-|------|-------------|
 | `get_channel_schedule` | Tablå för en kanal och datum |
 | `get_program_broadcasts` | Kommande sändningar för ett program |
 
 </details>
 
 <details>
-<summary><strong>Nyheter (2 tools)</strong></summary>
+<summary><strong>📰 Nyheter</strong></summary>
 
-| Tool | Beskrivning |
+**Fråga AI:n:**
+> *"Sammanfatta de senaste nyheterna från Ekot"*
+>
+> *"Vad har hänt i Sverige idag enligt SR?"*
+
+| Tool | Vad den gör |
 |------|-------------|
 | `list_news_programs` | Översikt av nyhetsprogram |
 | `get_latest_news_episodes` | Senaste nyhetssändningar |
@@ -214,9 +235,14 @@ claude mcp add sverigesradio node /path/to/Sveriges.Radio-MCP/dist/index.js
 </details>
 
 <details>
-<summary><strong>Trafik (2 tools)</strong></summary>
+<summary><strong>🚗 Trafik</strong></summary>
 
-| Tool | Beskrivning |
+**Fråga AI:n:**
+> *"Finns det några trafikproblem på E4:an just nu?"*
+>
+> *"Hur är trafikläget i Stockholm?"*
+
+| Tool | Vad den gör |
 |------|-------------|
 | `get_traffic_messages` | Trafikmeddelanden per område |
 | `get_traffic_areas` | Trafikområden (med GPS-uppslag) |
@@ -224,9 +250,14 @@ claude mcp add sverigesradio node /path/to/Sveriges.Radio-MCP/dist/index.js
 </details>
 
 <details>
-<summary><strong>Övrigt (5 tools)</strong></summary>
+<summary><strong>🔍 Övrigt</strong></summary>
 
-| Tool | Beskrivning |
+**Fråga AI:n:**
+> *"Sök efter allt som handlar om klimatet"*
+>
+> *"Vilka programkategorier finns det på Sveriges Radio?"*
+
+| Tool | Vad den gör |
 |------|-------------|
 | `search_all` | Global sökning (program + avsnitt + kanaler) |
 | `get_recently_published` | Nyligen publicerat innehåll |
@@ -238,59 +269,7 @@ claude mcp add sverigesradio node /path/to/Sveriges.Radio-MCP/dist/index.js
 
 ---
 
-## Exempel: Så här kan du använda AI + Sveriges Radio
-
-När du kopplat MCP-servern till din AI-assistent kan du ställa frågor på naturligt språk. Här är verkliga exempel:
-
-### Daglig morgonrutin
-
-> **"Ge mig en morgonöversikt - vad sänds just nu på P1, senaste nyheterna och trafikläget i Stockholm"**
-
-AI:n hämtar automatiskt live-data från flera källor och sammanställer en personlig briefing.
-
-### Hitta podcasts
-
-> **"Jag gillar true crime och dokumentärer. Vilka SR-podcasts skulle passa mig?"**
-
-> **"Finns det några bra podcasts om svensk historia?"**
-
-> **"Rekommendera en podd för min pendling som är 45 minuter"**
-
-### Musikupptäckt
-
-> **"Vilken låt spelades på P3 för ungefär 20 minuter sedan? Jag hörde den i bilen"**
-
-> **"Visa de senaste 10 låtarna som spelats på P2 Musik"**
-
-> **"Vilka artister spelas mest på P4?"**
-
-### Nyheter & Aktualitet
-
-> **"Sammanfatta de senaste nyheterna från Ekot"**
-
-> **"Vad har hänt i Sverige idag enligt SR?"**
-
-> **"Finns det några trafikproblem på E4:an just nu?"**
-
-### Planera lyssnande
-
-> **"När sänds nästa avsnitt av Filosofiska rummet?"**
-
-> **"Vad går på P1 ikväll mellan 18-21?"**
-
-> **"Vilka program sänds live just nu?"**
-
-### Research & Analys
-
-> **"Hitta alla avsnitt av Vetenskapsradion som handlar om AI"**
-
-> **"Lista SR:s alla lokalradiostationer"**
-
-> **"Vilka programkategorier finns det på Sveriges Radio?"**
-
----
-
-## Exempel: Skapa egna appar
+## Bygg egna appar
 
 Med MCP-servern som backend kan du snabbt bygga användbara verktyg. Här är fyra idéer:
 
