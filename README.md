@@ -296,22 +296,9 @@ Med MCP-servern som backend kan du snabbt bygga användbara verktyg. Här är fy
 
 ### 1. Personlig Radio-Dashboard
 
-En webbsida som visar allt du behöver på morgonen:
+En webbsida som visar allt du behöver på morgonen - live-radio, nyheter och trafikinfo.
 
-```
-┌─────────────────────────────────────────────────────┐
-│  🎙️ LIVE NU                                        │
-│  P1: Ekot 07:00 | P3: Morgonpasset | P4: Lokalt    │
-├─────────────────────────────────────────────────────┤
-│  📰 SENASTE NYTT                                   │
-│  • Regeringen presenterar ny budget                │
-│  • Kraftig vind väntas i Norrland                  │
-├─────────────────────────────────────────────────────┤
-│  🚗 TRAFIK STOCKHOLM                               │
-│  • Köer E4 Södertälje (30 min extra)               │
-│  • Olycka Essingeleden - ett körfält avstängt      │
-└─────────────────────────────────────────────────────┘
-```
+<img src="docs/images/1-dashboard.png" alt="Radio Dashboard mockup" width="400">
 
 **Tools:** `get_all_rightnow` + `get_latest_news_episodes` + `get_traffic_messages`
 
@@ -319,20 +306,9 @@ En webbsida som visar allt du behöver på morgonen:
 
 ### 2. "Vad var det för låt?" - Musikidentifierare
 
-En app för att hitta låtar du hört på radion:
+En app för att hitta låtar du hört på radion, med Spotify-integration.
 
-```
-┌─────────────────────────────────────────────────────┐
-│  🎵 P3 - Senaste låtarna                           │
-├─────────────────────────────────────────────────────┤
-│  14:32  "Running Up That Hill" - Kate Bush         │
-│  14:28  "Blinding Lights" - The Weeknd             │
-│  14:24  "Beggin'" - Måneskin                       │
-│  14:19  "Heat Waves" - Glass Animals               │
-│                                                     │
-│  [🔍 Sök i Spotify]  [📋 Kopiera spellista]        │
-└─────────────────────────────────────────────────────┘
-```
+<img src="docs/images/2-music.png" alt="Music identifier mockup" width="400">
 
 **Tools:** `get_playlist_rightnow` + `get_channel_playlist`
 
@@ -340,24 +316,9 @@ En app för att hitta låtar du hört på radion:
 
 ### 3. Podcast-rekommendationsmotor
 
-En smart sökmotor som hittar rätt podd baserat på intressen:
+En smart sökmotor som hittar rätt podd baserat på dina intressen.
 
-```
-┌─────────────────────────────────────────────────────┐
-│  🎧 Vad vill du lyssna på?                         │
-│  ┌─────────────────────────────────────────────┐   │
-│  │ vetenskap, rymden, universum               │   │
-│  └─────────────────────────────────────────────┘   │
-├─────────────────────────────────────────────────────┤
-│  Rekommendationer:                                  │
-│  ⭐ Vetenskapsradion (98% match)                   │
-│     "Fördjupande om forskning och vetenskap"       │
-│     [▶️ Senaste avsnittet] [📥 Prenumerera]        │
-│                                                     │
-│  ⭐ P3 Dystopia (87% match)                        │
-│     "Framtidsvisioner och teknik"                  │
-└─────────────────────────────────────────────────────┘
-```
+<img src="docs/images/3-podcast.png" alt="Podcast finder mockup" width="400">
 
 **Tools:** `search_programs` + `list_program_categories` + `get_latest_episode`
 
@@ -365,20 +326,9 @@ En smart sökmotor som hittar rätt podd baserat på intressen:
 
 ### 4. Trafikvarnings-bot (Slack/Discord)
 
-En bot som automatiskt varnar ditt team om trafikproblem:
+En bot som automatiskt varnar ditt team om trafikproblem på pendlingsvägarna.
 
-```
-┌─────────────────────────────────────────────────────┐
-│  🤖 SR Trafikbot                           #pendla │
-├─────────────────────────────────────────────────────┤
-│  ⚠️ VARNING 07:15                                  │
-│  Olycka på E18 vid Järfälla                        │
-│  Beräknad försening: 25 minuter                    │
-│  📍 Koordinater: 59.4284, 17.8432                  │
-│                                                     │
-│  💡 Alternativ rutt: Ta av vid Kista, följ 275     │
-└─────────────────────────────────────────────────────┘
-```
+<img src="docs/images/4-traffic.png" alt="Traffic bot mockup" width="400">
 
 **Tools:** `get_traffic_messages` + `get_traffic_areas` (polling var 5:e minut)
 
