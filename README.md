@@ -12,114 +12,6 @@
 
 ---
 
-## Översikt
-
-| Kategori | Antal | Beskrivning |
-|----------|-------|-------------|
-| **Tools** | 26 | Program, kanaler, avsnitt, spellistor, nyheter, trafik |
-| **Resources** | 4 | API-info, kanallista, ljudkvalitet, kategorier |
-| **Prompts** | 6 | Fördefinierade arbetsflöden för vanliga uppgifter |
-
----
-
-## Snabbstart
-
-### Alternativ 1: Remote Server (Rekommenderat)
-
-**Ingen installation krävs!** Använd vår hostade server direkt.
-
-<details>
-<summary><strong>ChatGPT</strong></summary>
-
-1. Gå till **Settings** → **Connected Apps** → **Add Plugin**
-2. Välj "Add custom MCP server"
-3. Ange URL: `https://sverigesradio-mcp.onrender.com/mcp`
-
-</details>
-
-<details>
-<summary><strong>Claude Desktop / Claude Code</strong></summary>
-
-Lägg till i din MCP-konfiguration (`claude_desktop_config.json` eller `.claude.json`):
-
-```json
-{
-  "mcpServers": {
-    "sverigesradio": {
-      "url": "https://sverigesradio-mcp.onrender.com/mcp"
-    }
-  }
-}
-```
-
-</details>
-
-<details>
-<summary><strong>Cursor</strong></summary>
-
-Lägg till i `.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "sverigesradio": {
-      "transportType": "streamable-http",
-      "url": "https://sverigesradio-mcp.onrender.com/mcp"
-    }
-  }
-}
-```
-
-</details>
-
-<details>
-<summary><strong>Andra MCP-klienter</strong></summary>
-
-Använd **StreamableHTTP transport** (MCP 2025-03-26 spec):
-- **Endpoint:** `https://sverigesradio-mcp.onrender.com/mcp`
-- **Auth:** Ingen (publikt API)
-- **Format:** JSON-RPC 2.0
-
-</details>
-
----
-
-### Alternativ 2: npm-paket
-
-```bash
-npx sverigesradio-mcp
-```
-
-Eller installera globalt:
-
-```bash
-npm install -g sverigesradio-mcp
-sverigesradio-mcp
-```
-
----
-
-### Alternativ 3: Lokal Installation
-
-```bash
-git clone https://github.com/isakskogstad/Sveriges.Radio-MCP.git
-cd Sveriges.Radio-MCP
-npm install
-npm run build
-npm start
-```
-
-<details>
-<summary><strong>Lägg till i Claude Code</strong></summary>
-
-```bash
-claude mcp add sverigesradio node /path/to/Sveriges.Radio-MCP/dist/index.js
-```
-
-</details>
-
----
-
 ## Användningsområden
 
 Koppla MCP-servern till din AI-assistent och ställ frågor på naturligt språk. Här är fyra huvudsakliga användningsområden - med exempelfrågor, tillgängliga tools och app-idéer:
@@ -291,6 +183,114 @@ Realtidsinfo om trafikstörningar för din pendling.
 | **+ Kalender** | *"Lägg till Konflikt i min kalender när det sänds"* |
 | **+ Webbsökning** | *"Sök mer info om artisten som spelas på P3 just nu"* |
 | **+ Anteckningar** | *"Spara länken till senaste P3 Dokumentär"* |
+
+---
+
+## Snabbstart
+
+### Alternativ 1: Remote Server (Rekommenderat)
+
+**Ingen installation krävs!** Använd vår hostade server direkt.
+
+<details>
+<summary><strong>ChatGPT</strong></summary>
+
+1. Gå till **Settings** → **Connected Apps** → **Add Plugin**
+2. Välj "Add custom MCP server"
+3. Ange URL: `https://sverigesradio-mcp.onrender.com/mcp`
+
+</details>
+
+<details>
+<summary><strong>Claude Desktop / Claude Code</strong></summary>
+
+Lägg till i din MCP-konfiguration (`claude_desktop_config.json` eller `.claude.json`):
+
+```json
+{
+  "mcpServers": {
+    "sverigesradio": {
+      "url": "https://sverigesradio-mcp.onrender.com/mcp"
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><strong>Cursor</strong></summary>
+
+Lägg till i `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "sverigesradio": {
+      "transportType": "streamable-http",
+      "url": "https://sverigesradio-mcp.onrender.com/mcp"
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><strong>Andra MCP-klienter</strong></summary>
+
+Använd **StreamableHTTP transport** (MCP 2025-03-26 spec):
+- **Endpoint:** `https://sverigesradio-mcp.onrender.com/mcp`
+- **Auth:** Ingen (publikt API)
+- **Format:** JSON-RPC 2.0
+
+</details>
+
+---
+
+### Alternativ 2: npm-paket
+
+```bash
+npx sverigesradio-mcp
+```
+
+Eller installera globalt:
+
+```bash
+npm install -g sverigesradio-mcp
+sverigesradio-mcp
+```
+
+---
+
+### Alternativ 3: Lokal Installation
+
+```bash
+git clone https://github.com/isakskogstad/Sveriges.Radio-MCP.git
+cd Sveriges.Radio-MCP
+npm install
+npm run build
+npm start
+```
+
+<details>
+<summary><strong>Lägg till i Claude Code</strong></summary>
+
+```bash
+claude mcp add sverigesradio node /path/to/Sveriges.Radio-MCP/dist/index.js
+```
+
+</details>
+
+---
+
+## Översikt
+
+| Kategori | Antal | Beskrivning |
+|----------|-------|-------------|
+| **Tools** | 26 | Program, kanaler, avsnitt, spellistor, nyheter, trafik |
+| **Resources** | 4 | API-info, kanallista, ljudkvalitet, kategorier |
+| **Prompts** | 6 | Fördefinierade arbetsflöden för vanliga uppgifter |
 
 ---
 
