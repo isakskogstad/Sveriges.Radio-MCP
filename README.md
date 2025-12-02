@@ -1,48 +1,37 @@
 # Sveriges Radio MCP Server
 
-> Modern MCP server for Sveriges Radio's Open API - access Swedish radio programs, podcasts, live streams, playlists, news and traffic.
-
-[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](https://github.com/isakskogstad/Sveriges.Radio-MCP)
-[![MCP Protocol](https://img.shields.io/badge/MCP-2025--03--26-green)](https://modelcontextprotocol.io)
+[![Server Status](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fsverigesradio-mcp.onrender.com%2Fhealth&query=%24.status&label=Server&color=brightgreen)](https://sverigesradio-mcp.onrender.com/health)
+[![MCP Registry](https://img.shields.io/badge/MCP-Registry-blue)](https://registry.modelcontextprotocol.io)
+[![Protocol](https://img.shields.io/badge/MCP-2025--03--26-green)](https://modelcontextprotocol.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue.svg)](https://www.typescriptlang.org/)
 
----
+**MCP-server for Sveriges Radio's Open API - access Swedish public radio programs, podcasts, live streams, playlists, news and traffic information.**
 
-## What's New in v1.2.0
-
-### Bug Fixes
-- **`get_playlist_rightnow`** - Now correctly returns current song, previous song, next song and channel data (was returning null)
-- **`search_programs`** - Improved search with client-side relevance ranking (searching "P3 Dokumentar" now returns P3 Dokumentar as first result)
-
-See [CHANGELOG.md](CHANGELOG.md) for full details.
+*MCP-server for Sveriges Radios Öppna API - tillgång till svensk public service-radio: program, podcasts, liveströmmar, spellistor, nyheter och trafikinformation.*
 
 ---
 
-## Features
+## Översikt
 
-- **Audio Content** - Direct access to MP3 files for streaming and download
-- **Metadata** - Detailed information about programs, channels and episodes
-- **Live Data** - Real-time information about what's playing right now
-- **Playlists** - Complete music history with artist, title, album, composer
-- **Traffic Info** - Current traffic messages with geographic coordinates
-- **Search** - Full-text search in programs, episodes and content
+| Kategori | Antal | Beskrivning |
+|----------|-------|-------------|
+| **Tools** | 26 | Program, kanaler, avsnitt, spellistor, nyheter, trafik |
+| **Resources** | 4 | API-info, kanallista, ljudkvalitet, kategorier |
+| **Prompts** | 6 | Fördefinierade arbetsflöden för vanliga uppgifter |
 
 ---
 
-## Quick Start
+## Snabbstart
 
-### Remote Server (Recommended)
+### Alternativ 1: Remote Server (Rekommenderat)
 
-**No installation needed!** Use our hosted server:
+**Ingen installation krävs!** Använd vår hostade server direkt.
 
-```
-https://sverigesradio-mcp.onrender.com/mcp
-```
+<details>
+<summary><strong>Claude Desktop / Claude Code</strong></summary>
 
-#### Claude Desktop / Claude Code
-
-Add to your Claude MCP configuration (`claude_desktop_config.json` or `.claude.json`):
+Lägg till i din MCP-konfiguration (`claude_desktop_config.json` eller `.claude.json`):
 
 ```json
 {
@@ -54,9 +43,12 @@ Add to your Claude MCP configuration (`claude_desktop_config.json` or `.claude.j
 }
 ```
 
-#### Cursor
+</details>
 
-Add to `.cursor/mcp.json`:
+<details>
+<summary><strong>Cursor</strong></summary>
+
+Lägg till i `.cursor/mcp.json`:
 
 ```json
 {
@@ -69,18 +61,36 @@ Add to `.cursor/mcp.json`:
 }
 ```
 
-#### Other MCP Clients
+</details>
 
-Use **StreamableHTTP transport** (MCP 2025-03-26 spec):
+<details>
+<summary><strong>Andra MCP-klienter</strong></summary>
+
+Använd **StreamableHTTP transport** (MCP 2025-03-26 spec):
 - **Endpoint:** `https://sverigesradio-mcp.onrender.com/mcp`
-- **Auth:** None (public API)
+- **Auth:** Ingen (publikt API)
 - **Format:** JSON-RPC 2.0
+
+</details>
 
 ---
 
-### Local Installation
+### Alternativ 2: npm-paket
 
-#### From Source
+```bash
+npx sverigesradio-mcp
+```
+
+Eller installera globalt:
+
+```bash
+npm install -g sverigesradio-mcp
+sverigesradio-mcp
+```
+
+---
+
+### Alternativ 3: Lokal Installation
 
 ```bash
 git clone https://github.com/isakskogstad/Sveriges.Radio-MCP.git
@@ -90,219 +100,212 @@ npm run build
 npm start
 ```
 
-#### Claude Code/Desktop (local)
+<details>
+<summary><strong>Lägg till i Claude Code</strong></summary>
 
 ```bash
-# Clone and build
-git clone https://github.com/isakskogstad/Sveriges.Radio-MCP.git
-cd Sveriges.Radio-MCP && npm install && npm run build
-
-# Add to Claude
 claude mcp add sverigesradio node /path/to/Sveriges.Radio-MCP/dist/index.js
 ```
 
----
-
-## Tools (26 total)
-
-### Real-time & Live (3 tools)
-| Tool | Description |
-|------|-------------|
-| `get_all_rightnow` | What's playing on ALL channels right now |
-| `get_channel_rightnow` | Current program on a specific channel |
-| `get_playlist_rightnow` | Current song (previous, current, next) with full metadata |
-
-### Music & Playlists (4 tools)
-| Tool | Description |
-|------|-------------|
-| `get_playlist_rightnow` | Song playing right now on a channel |
-| `get_channel_playlist` | Song history for a channel in time range |
-| `get_program_playlist` | Song history for a program in time range |
-| `get_episode_playlist` | Complete playlist for an episode |
-
-*All songs include: title, artist, composer, album, record label, producer, lyricist, conductor and timestamps*
-
-### Programs & Podcasts (4 tools)
-| Tool | Description |
-|------|-------------|
-| `search_programs` | Search for programs (with relevance ranking) |
-| `get_program` | Get program details |
-| `list_program_categories` | All 15 program categories |
-| `get_program_schedule` | When a program airs |
-
-### Broadcasts & Podcasts (3 tools)
-| Tool | Description |
-|------|-------------|
-| `list_broadcasts` | Available broadcasts (30 days) |
-| `list_podfiles` | Podcast files for a program |
-| `get_podfile` | Specific podcast file with metadata |
-
-### Episodes (5 tools)
-| Tool | Description |
-|------|-------------|
-| `list_episodes` | List episodes from a program |
-| `search_episodes` | Full-text search in episodes |
-| `get_episode` | Specific episode with audio files |
-| `get_episodes_batch` | Fetch multiple episodes at once |
-| `get_latest_episode` | Latest episode for a program |
-
-### Channels (2 tools)
-| Tool | Description |
-|------|-------------|
-| `list_channels` | All channels (P1-P4, local stations) |
-| `get_channel_rightnow` | What's playing now on a channel |
-
-### Schedule (2 tools)
-| Tool | Description |
-|------|-------------|
-| `get_channel_schedule` | Schedule for a channel and date |
-| `get_program_broadcasts` | Upcoming broadcasts for a program |
-
-### News (2 tools)
-| Tool | Description |
-|------|-------------|
-| `list_news_programs` | Overview of news programs |
-| `get_latest_news_episodes` | Latest news broadcasts |
-
-### Traffic (2 tools)
-| Tool | Description |
-|------|-------------|
-| `get_traffic_messages` | Traffic messages by area |
-| `get_traffic_areas` | Traffic areas (with GPS lookup) |
-
-### Miscellaneous (5 tools)
-| Tool | Description |
-|------|-------------|
-| `search_all` | Global search (programs + episodes + channels) |
-| `get_recently_published` | Recently published content |
-| `get_top_stories` | Featured content from SR |
-| `list_extra_broadcasts` | Extra broadcasts (sports, special events) |
-| `get_episode_group` | Collection of episodes |
-
-### Audio Templates (2 tools)
-| Tool | Description |
-|------|-------------|
-| `list_ondemand_audio_templates` | URL templates for podcast audio |
-| `list_live_audio_templates` | URL templates for live streams |
+</details>
 
 ---
 
-## Usage Examples
+## Tillgängliga Tools
 
-### 1. Live Radio Dashboard
-Combine `get_all_rightnow`, `get_latest_news_episodes` and `get_traffic_messages` for a complete overview of what's happening right now.
+<details>
+<summary><strong>Realtid & Live (3 tools)</strong></summary>
 
-### 2. Music Database & Playlist History
-Use `get_channel_playlist` to analyze music history on P2 Musik over a week, or `get_program_playlist` to see all songs played in a music program. Perfect for discovering new music or creating statistics on most played artists.
+| Tool | Beskrivning |
+|------|-------------|
+| `get_all_rightnow` | Vad som spelas på ALLA kanaler just nu |
+| `get_channel_rightnow` | Aktuellt program på en specifik kanal |
+| `get_playlist_rightnow` | Aktuell låt (föregående, nuvarande, nästa) med full metadata |
 
-### 3. Smart Podcast Search
-Use `search_programs` with category filter and analyze metadata to find relevant podcasts based on interests.
+</details>
 
-**Search Tips:**
-- Use `channelId` filter for channel-specific programs (e.g., `channelId: 164` for P3)
-- Use `programCategoryId` filter for genre-specific results (e.g., `programCategoryId: 82` for documentaries)
-- The search uses client-side relevance ranking for best results
+<details>
+<summary><strong>Musik & Spellistor (4 tools)</strong></summary>
 
-### 4. Traffic Analysis
-Fetch `get_traffic_messages` for specific geographic areas and create real-time alerts for commuting routes.
+| Tool | Beskrivning |
+|------|-------------|
+| `get_playlist_rightnow` | Låt som spelas just nu på en kanal |
+| `get_channel_playlist` | Låthistorik för en kanal inom tidsintervall |
+| `get_program_playlist` | Låthistorik för ett program inom tidsintervall |
+| `get_episode_playlist` | Komplett spellista för ett avsnitt |
+
+*Alla låtar inkluderar: titel, artist, kompositör, album, skivbolag, producent, textförfattare, dirigent och tidsstämplar*
+
+</details>
+
+<details>
+<summary><strong>Program & Podcasts (4 tools)</strong></summary>
+
+| Tool | Beskrivning |
+|------|-------------|
+| `search_programs` | Sök efter program (med relevansranking) |
+| `get_program` | Hämta programdetaljer |
+| `list_program_categories` | Alla 15 programkategorier |
+| `get_program_schedule` | När ett program sänds |
+
+</details>
+
+<details>
+<summary><strong>Sändningar & Podcasts (3 tools)</strong></summary>
+
+| Tool | Beskrivning |
+|------|-------------|
+| `list_broadcasts` | Tillgängliga sändningar (30 dagar) |
+| `list_podfiles` | Podcastfiler för ett program |
+| `get_podfile` | Specifik podcastfil med metadata |
+
+</details>
+
+<details>
+<summary><strong>Avsnitt (5 tools)</strong></summary>
+
+| Tool | Beskrivning |
+|------|-------------|
+| `list_episodes` | Lista avsnitt från ett program |
+| `search_episodes` | Fulltextsökning i avsnitt |
+| `get_episode` | Specifikt avsnitt med ljudfiler |
+| `get_episodes_batch` | Hämta flera avsnitt samtidigt |
+| `get_latest_episode` | Senaste avsnittet för ett program |
+
+</details>
+
+<details>
+<summary><strong>Kanaler (2 tools)</strong></summary>
+
+| Tool | Beskrivning |
+|------|-------------|
+| `list_channels` | Alla kanaler (P1-P4, lokalstationer) |
+| `get_channel_rightnow` | Vad som spelas nu på en kanal |
+
+</details>
+
+<details>
+<summary><strong>Schema (2 tools)</strong></summary>
+
+| Tool | Beskrivning |
+|------|-------------|
+| `get_channel_schedule` | Tablå för en kanal och datum |
+| `get_program_broadcasts` | Kommande sändningar för ett program |
+
+</details>
+
+<details>
+<summary><strong>Nyheter (2 tools)</strong></summary>
+
+| Tool | Beskrivning |
+|------|-------------|
+| `list_news_programs` | Översikt av nyhetsprogram |
+| `get_latest_news_episodes` | Senaste nyhetssändningar |
+
+</details>
+
+<details>
+<summary><strong>Trafik (2 tools)</strong></summary>
+
+| Tool | Beskrivning |
+|------|-------------|
+| `get_traffic_messages` | Trafikmeddelanden per område |
+| `get_traffic_areas` | Trafikområden (med GPS-uppslag) |
+
+</details>
+
+<details>
+<summary><strong>Övrigt (5 tools)</strong></summary>
+
+| Tool | Beskrivning |
+|------|-------------|
+| `search_all` | Global sökning (program + avsnitt + kanaler) |
+| `get_recently_published` | Nyligen publicerat innehåll |
+| `get_top_stories` | Utvalt innehåll från SR |
+| `list_extra_broadcasts` | Extra sändningar (sport, special events) |
+| `get_episode_group` | Samling av avsnitt |
+
+</details>
 
 ---
 
-## Resources (4 total)
+## Användningsområden
 
-Resources provide quick access to reference data:
+### Live Radio Dashboard
+Kombinera `get_all_rightnow`, `get_latest_news_episodes` och `get_traffic_messages` för en komplett översikt av vad som händer just nu.
 
-| Resource | Description |
+### Musikdatabas & Spellistehistorik
+Använd `get_channel_playlist` för att analysera musikhistorik på P2 Musik under en vecka, eller `get_program_playlist` för att se alla låtar som spelats i ett musikprogram.
+
+### Smart Podcast-sökning
+Använd `search_programs` med kategorifilter för att hitta relevanta podcasts baserat på intressen. Sökningen använder klient-side relevansranking för bästa resultat.
+
+### Trafikanalys
+Hämta `get_traffic_messages` för specifika geografiska områden och skapa realtidsvarningar för pendlingsrutter.
+
+---
+
+## Teknisk Stack
+
+| Komponent | Teknologi |
+|-----------|-----------|
+| **Runtime** | Node.js 20+ |
+| **Språk** | TypeScript 5.6 |
+| **MCP SDK** | @modelcontextprotocol/sdk |
+| **Transport** | StreamableHTTP (MCP 2025-03-26) |
+| **API** | Sveriges Radio Open API v2 |
+| **Hosting** | Render (Frankfurt) |
+
+### Säkerhetsfunktioner
+
+| Funktion | Beskrivning |
 |----------|-------------|
-| `sr://api/info` | API capabilities, versions, rate limits, caching info |
-| `sr://channels/all` | Complete channel list with IDs (P1-P4, local stations) |
-| `sr://audio/quality-guide` | Audio quality and formats (hi/normal/low) |
-| `sr://categories/programs` | All 15 program categories with descriptions |
+| **Session TTL** | Automatisk rensning av inaktiva sessioner (30 min) |
+| **Rate Limiting** | Konfigurerbar per-IP begränsning (60 req/min) |
+| **UUID Validering** | Säker session ID-validering |
+| **CORS** | Konfigurerbara tillåtna origins |
+| **Strukturerad Loggning** | JSON-formaterade loggar för övervakning |
 
 ---
 
-## Prompts (6 total)
+## Konfiguration
 
-Pre-built workflows for common tasks:
-
-| Prompt | Description |
-|--------|-------------|
-| `find-podcast` | Find podcasts by topic |
-| `whats-on-now` | What's broadcasting right now |
-| `whats-playing-now` | Current song on music channels |
-| `traffic-nearby` | Traffic situation in your area |
-| `news-briefing` | Latest news |
-| `explore-schedule` | Browse the schedule |
+| Variabel | Standard | Beskrivning |
+|----------|----------|-------------|
+| `PORT` | `3000` | HTTP-serverport |
+| `MCP_AUTH_TOKEN` | - | Valfri Bearer-token för autentisering |
+| `ALLOWED_ORIGINS` | `*` | CORS origins (kommaseparerade eller * för alla) |
+| `SESSION_TTL_MS` | `1800000` | Session timeout (30 min standard) |
+| `RATE_LIMIT_REQUESTS` | `60` | Max requests per minut per IP |
 
 ---
 
-## Development
+## Utveckling
 
 ```bash
-npm run dev          # Development mode (stdio)
-npm run dev:http     # HTTP server development
-npm run build        # Build production
-npm test             # Run tests
-```
-
-### Project Structure
-
-```
-src/
-├── index.ts                  # Main entry (stdio transport)
-├── streamable-http-server.ts # HTTP server (StreamableHTTP transport)
-├── constants.ts              # API constants
-├── lib/
-│   ├── sr-client.ts          # SR API client with caching
-│   ├── errors.ts             # Error handling
-│   └── tool-utils.ts         # Tool utilities
-├── tools/
-│   ├── channels.ts           # Channel tools
-│   ├── programs.ts           # Program tools
-│   ├── episodes.ts           # Episode tools
-│   ├── schedule.ts           # Schedule tools
-│   ├── playlists.ts          # Playlist tools
-│   ├── news.ts               # News tools
-│   ├── traffic.ts            # Traffic tools
-│   └── misc.ts               # Miscellaneous tools
-├── types/
-│   └── sr-api.ts             # TypeScript interfaces
-├── prompts/                  # MCP prompts
-└── resources/                # MCP resources
+npm run dev          # Utvecklingsläge (stdio)
+npm run dev:http     # HTTP-server utveckling
+npm run build        # Bygg för produktion
+npm test             # Kör tester
 ```
 
 ---
 
-## API Information
-
-**Sveriges Radio Open API v2**
-- Base URL: `https://api.sr.se/api/v2/`
-- Format: JSON/XML
-- Auth: None (public API)
-- Caching: HTTP ETags (304 Not Modified)
-- Documentation: [api.sr.se/api/documentation/v2](https://api.sr.se/api/documentation/v2/)
-
-**Note:** The SR API's built-in search functionality has limitations. This MCP server implements client-side relevance ranking for better search results.
-
----
-
-## Known Limitations
-
-1. **SR API Search** - The official SR API's search/filter functionality doesn't work reliably for text search. This server compensates with client-side relevance ranking.
-
-2. **Playlist Data** - `get_playlist_rightnow` may return null for channels that don't track music (e.g., talk radio).
-
-3. **Rate Limits** - The SR API has rate limits. The server implements ETag-based caching to reduce requests.
-
----
-
-## License
+## Licens
 
 MIT (c) Isak Skogstad
 
-## Links
+---
+
+## Länkar
 
 - [GitHub Repository](https://github.com/isakskogstad/Sveriges.Radio-MCP)
-- [SR API Documentation](https://api.sr.se/api/documentation/v2/)
+- [SR API Dokumentation](https://api.sr.se/api/documentation/v2/)
 - [MCP Protocol](https://modelcontextprotocol.io)
 - [Changelog](CHANGELOG.md)
+
+---
+
+## Support
+
+Skapa ett [GitHub Issue](https://github.com/isakskogstad/Sveriges.Radio-MCP/issues) för bugrapporter eller funktionsförfrågningar.
