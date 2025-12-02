@@ -10,6 +10,10 @@
 
 *MCP-server for Sveriges Radios Öppna API - tillgång till svensk public service-radio: program, podcasts, liveströmmar, spellistor, nyheter och trafikinformation.*
 
+<p align="center">
+  <img src="docs/images/demo-animation.gif" alt="Demo: AI bygger en SR Dashboard" width="600">
+</p>
+
 ---
 
 ## Användningsområden
