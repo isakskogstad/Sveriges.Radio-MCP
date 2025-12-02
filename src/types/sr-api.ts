@@ -208,6 +208,23 @@ export interface SRPlaylist {
   playlist?: SRPlaylistEntry[];
 }
 
+/**
+ * Response från /playlists/rightnow endpoint
+ * SR API returnerar data inuti ett 'playlist'-objekt
+ */
+export interface SRPlaylistRightNowResponse {
+  copyright?: string;
+  playlist?: {
+    song?: SRPlaylistSong;
+    nextsong?: SRPlaylistSong;
+    previoussong?: SRPlaylistSong;
+    channel?: {
+      id: number;
+      name: string;
+    };
+  };
+}
+
 export interface SRSongList {
   copyright: string;
   song?: SRPlaylistEntry[];

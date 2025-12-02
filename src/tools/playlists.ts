@@ -11,7 +11,7 @@
 
 import { z } from 'zod';
 import { srClient } from '../lib/sr-client.js';
-import type { SRPlaylist, SRSongList } from '../types/sr-api.js';
+import type { SRPlaylistRightNowResponse, SRSongList } from '../types/sr-api.js';
 
 // ========================================
 // Schemas
@@ -85,14 +85,17 @@ export async function getPlaylistRightNow(params: z.infer<typeof GetPlaylistRigh
     queryParams.format = format;
   }
 
-  const response = await srClient.fetch<SRPlaylist>('playlists/rightnow', queryParams);
+  const response = await srClient.fetch<SRPlaylistRightNowResponse>('playlists/rightnow', queryParams);
+
+  // SR API returnerar data inuti ett 'playlist'-objekt
+  const playlist = response.playlist;
 
   return {
     copyright: response.copyright,
-    currentSong: response.song || null,
-    nextSong: response.nextsong || null,
-    previousSong: response.previoussong || null,
-    channel: response.channel || null,
+    currentSong: playlist?.song || null,
+    nextSong: playlist?.nextsong || null,
+    previousSong: playlist?.previoussong || null,
+    channel: playlist?.channel || null,
     timestamp: new Date().toISOString(),
   };
 }

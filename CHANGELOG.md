@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-12-02
+
+### Fixed
+
+#### 🐛 Critical Bug: `get_playlist_rightnow` Now Works!
+- **Root cause**: SR API returns data inside a `playlist` object, but code was reading from root level
+- **Before**: Always returned `null` for currentSong, previousSong, nextSong, and channel
+- **After**: Correctly parses `response.playlist.song`, `response.playlist.previoussong`, etc.
+- Added new `SRPlaylistRightNowResponse` TypeScript interface
+
+#### 🔍 Improved: `search_programs` Returns Relevant Results
+- **Root cause**: SR API's `filter` parameter doesn't work correctly for text search
+- **Before**: Searching "P3 Dokumentär" returned unrelated programs like "Nyheter P4 Jämtland"
+- **After**: Client-side relevance ranking ensures correct results
+- **Solution implemented**:
+  - Fetches 200 programs per request when searching
+  - Scores programs by relevance (exact match > starts with > contains)
+  - Sorts results by relevance score
+  - Returns `searchInfo` metadata explaining the search method
+- **Example**: Searching "P3 Dokumentär" now returns "P3 Dokumentär" as first result!
+
+### Changed
+- Updated tool description for `search_programs` with helpful tips
+- Added `searchInfo` field to search results for transparency
+
 ## [1.1.0] - 2025-11-20
 
 ### Added - Modern MCP Server Implementation

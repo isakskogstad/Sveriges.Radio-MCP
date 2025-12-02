@@ -64,13 +64,92 @@ const GetPodfileSchema = z.object({
 
 // Tool handlers
 export async function searchPrograms(params: z.infer<typeof SearchProgramsSchema>) {
-  const queryParams: any = { ...params };
+  const { query, programCategoryId, channelId, hasOnDemand, isArchived, filter, filterValue, sort, page, size, format } = params;
+
+  const queryParams: any = {};
+
+  // SR API:s filter-parameter fungerar inte korrekt för textsökning.
+  // Vi hämtar alla program och filtrerar klient-side istället.
+  // Om användaren angett egna filter, använd dem.
+  if (filter && filterValue) {
+    queryParams.filter = filter;
+    queryParams.filtervalue = filterValue;
+  }
+
+  // Lägg till övriga parametrar
+  if (programCategoryId !== undefined) queryParams.programcategoryid = programCategoryId;
+  if (channelId !== undefined) queryParams.channelid = channelId;
+  if (hasOnDemand !== undefined) queryParams.hasondemand = hasOnDemand;
+  if (isArchived !== undefined) queryParams.isarchived = isArchived;
+  if (sort && !query) queryParams.sort = sort; // Endast om ingen query (vi sorterar själva)
+
+  // Om textsökning: hämta fler resultat för klient-side filtrering
+  if (query) {
+    queryParams.size = 200; // Hämta fler för bättre sökresultat
+    queryParams.page = 1;
+  } else {
+    if (page !== undefined) queryParams.page = page;
+    if (size !== undefined) queryParams.size = size;
+  }
+
+  if (format) queryParams.format = format;
 
   const response = await srClient.fetch<PaginatedResponse<SRProgram>>('programs', queryParams);
 
+  let programs = (response as any).programs || [];
+
+  // Klient-side filtrering för bättre sökträffar om query angavs
+  if (query) {
+    const queryLower = query.toLowerCase();
+    const queryWords = queryLower.split(/\s+/).filter(w => w.length > 0);
+
+    // Sortera program efter relevans (hur väl de matchar söktermen)
+    const scoredPrograms: Array<{ program: SRProgram; score: number }> = programs
+      .map((program: SRProgram) => {
+        const nameLower = program.name.toLowerCase();
+        const descLower = (program.description || '').toLowerCase();
+
+        // Beräkna relevanspoäng
+        let score = 0;
+
+        // Exakt match i namn = högst poäng
+        if (nameLower === queryLower) score += 100;
+        // Namn börjar med söktermen
+        else if (nameLower.startsWith(queryLower)) score += 50;
+        // Namn innehåller söktermen
+        else if (nameLower.includes(queryLower)) score += 30;
+
+        // Bonus för varje ord som matchar
+        for (const word of queryWords) {
+          if (nameLower.includes(word)) score += 10;
+          if (descLower.includes(word)) score += 5;
+        }
+
+        return { program, score };
+      });
+
+    programs = scoredPrograms
+      .filter((item: { program: SRProgram; score: number }) => item.score > 0)
+      .sort((a: { program: SRProgram; score: number }, b: { program: SRProgram; score: number }) => b.score - a.score)
+      .map((item: { program: SRProgram; score: number }) => item.program);
+
+    // Begränsa antalet resultat om size angavs
+    if (size) {
+      programs = programs.slice(0, size);
+    }
+  }
+
   return {
-    programs: (response as any).programs || [],
-    pagination: response.pagination,
+    programs,
+    pagination: query ? {
+      ...response.pagination,
+      totalhits: programs.length,
+      note: 'Klient-side filtrering använd för bättre sökresultat',
+    } : response.pagination,
+    searchInfo: query ? {
+      method: 'client_side_relevance_ranking',
+      note: 'SR API har begränsad sökfunktion. Resultat hämtade och sorterade efter relevans lokalt.',
+    } : undefined,
   };
 }
 
@@ -192,14 +271,14 @@ export async function getPodfile(params: z.infer<typeof GetPodfileSchema>) {
 export const programTools = [
   {
     name: 'search_programs',
-    description: 'Sök efter radioprogram i Sveriges Radio (t.ex. Ekot, P3 Dokumentär, Sommar i P1). Kan filtrera på kategori, kanal, om det finns som podd, med mera.',
+    description: 'Sök efter radioprogram i Sveriges Radio. Söker i programnamn med relevansranking. TIPS: För bättre resultat, använd programCategoryId eller channelId som filter. Exempel: channelId=164 för P3-program, programCategoryId=82 för dokumentärer.',
     schema: SearchProgramsSchema,
     inputSchema: {
       type: 'object',
       properties: {
         query: {
           type: 'string',
-          description: 'Textsökning i programnamn',
+          description: 'Textsökning i programnamn (resultaten sorteras efter relevans)',
         },
         programCategoryId: {
           type: 'number',
