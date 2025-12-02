@@ -4,25 +4,15 @@
 services:
   - type: web
     name: sverigesradio-mcp
-    runtime: node
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     region: frankfurt  # Closest to Sweden
     plan: free
-    buildCommand: npm ci && npm run build
-    startCommand: node dist/streamable-http-server.js
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 3000
-      - key: MCP_AUTH_TOKEN
-        sync: false  # Optional, set manually in dashboard if needed
-      - key: ALLOWED_ORIGINS
-        value: "*"  # Configure as needed
-      - key: SESSION_TTL_MS
-        value: "1800000"  # 30 minutes
-      - key: RATE_LIMIT_REQUESTS
-        value: "60"  # 60 requests per minute
-      - key: SR_API_TIMEOUT_MS
-        value: "8000"
-    autoDeploy: true  # Auto-deploy on push to main branch
+    autoDeploy: true  # Auto-deploy on push to master branch

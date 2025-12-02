@@ -1,6 +1,6 @@
 {
   "name": "sverigesradio-mcp",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "MCP server for Sveriges Radio's Open API - access Swedish radio programs, podcasts, live streams, schedules, news and traffic",
   "type": "module",
   "main": "dist/index.js",
@@ -9,11 +9,11 @@
     "sr-mcp": "dist/index.js"
   },
   "scripts": {
-    "build": "tsc && chmod +x dist/index.js dist/streamable-http-server.js",
+    "build": "tsc && chmod +x dist/index.js dist/http-server.js",
     "dev": "tsx src/index.ts",
-    "dev:http": "tsx src/streamable-http-server.ts",
-    "start": "node dist/index.js",
-    "start:streamable": "node dist/streamable-http-server.js",
+    "dev:http": "tsx src/http-server.ts",
+    "start": "node dist/http-server.js",
+    "start:stdio": "node dist/index.js",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
     "prepare": "npm run build"
@@ -45,11 +45,15 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.22.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.3",
+    "express": "^5.2.1",
     "marked": "^17.0.1",
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/node": "^22.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
