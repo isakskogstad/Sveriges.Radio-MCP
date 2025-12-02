@@ -238,19 +238,68 @@ claude mcp add sverigesradio node /path/to/Sveriges.Radio-MCP/dist/index.js
 
 ---
 
-## Användningsområden
+## Exempel: Så här kan du använda AI + Sveriges Radio
 
-### Live Radio Dashboard
-Kombinera `get_all_rightnow`, `get_latest_news_episodes` och `get_traffic_messages` för en komplett översikt av vad som händer just nu.
+När du kopplat MCP-servern till din AI-assistent kan du ställa frågor på naturligt språk. Här är verkliga exempel:
 
-### Musikdatabas & Spellistehistorik
-Använd `get_channel_playlist` för att analysera musikhistorik på P2 Musik under en vecka, eller `get_program_playlist` för att se alla låtar som spelats i ett musikprogram.
+### Daglig morgonrutin
 
-### Smart Podcast-sökning
-Använd `search_programs` med kategorifilter för att hitta relevanta podcasts baserat på intressen. Sökningen använder klient-side relevansranking för bästa resultat.
+> **"Ge mig en morgonöversikt - vad sänds just nu på P1, senaste nyheterna och trafikläget i Stockholm"**
 
-### Trafikanalys
-Hämta `get_traffic_messages` för specifika geografiska områden och skapa realtidsvarningar för pendlingsrutter.
+AI:n hämtar automatiskt live-data från flera källor och sammanställer en personlig briefing.
+
+### Hitta podcasts
+
+> **"Jag gillar true crime och dokumentärer. Vilka SR-podcasts skulle passa mig?"**
+
+> **"Finns det några bra podcasts om svensk historia?"**
+
+> **"Rekommendera en podd för min pendling som är 45 minuter"**
+
+### Musikupptäckt
+
+> **"Vilken låt spelades på P3 för ungefär 20 minuter sedan? Jag hörde den i bilen"**
+
+> **"Visa de senaste 10 låtarna som spelats på P2 Musik"**
+
+> **"Vilka artister spelas mest på P4?"**
+
+### Nyheter & Aktualitet
+
+> **"Sammanfatta de senaste nyheterna från Ekot"**
+
+> **"Vad har hänt i Sverige idag enligt SR?"**
+
+> **"Finns det några trafikproblem på E4:an just nu?"**
+
+### Planera lyssnande
+
+> **"När sänds nästa avsnitt av Filosofiska rummet?"**
+
+> **"Vad går på P1 ikväll mellan 18-21?"**
+
+> **"Vilka program sänds live just nu?"**
+
+### Research & Analys
+
+> **"Hitta alla avsnitt av Vetenskapsradion som handlar om AI"**
+
+> **"Lista SR:s alla lokalradiostationer"**
+
+> **"Vilka programkategorier finns det på Sveriges Radio?"**
+
+---
+
+### Kombinera med andra verktyg
+
+MCP-servern blir ännu kraftfullare tillsammans med andra AI-verktyg:
+
+| Kombination | Exempel |
+|-------------|---------|
+| **+ Kalender** | "Lägg till Konflikt i min kalender när det sänds" |
+| **+ Webbsökning** | "Sök mer info om artisten som spelas på P3 just nu" |
+| **+ Anteckningar** | "Spara länken till senaste P3 Dokumentär i mina anteckningar" |
+| **+ Översättning** | "Översätt programbeskrivningen till engelska" |
 
 ---
 
