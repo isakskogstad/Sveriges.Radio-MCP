@@ -218,6 +218,13 @@ const server = new Server(
   {
     name: 'sverigesradio-mcp',
     version: '1.2.0',
+    icons: [
+      {
+        src: 'https://media.licdn.com/dms/image/v2/D4D0BAQFt59Z1kjqTLw/company-logo_200_200/company-logo_200_200/0/1719908877816/sveriges_radio_logo?e=2147483647&v=beta&t=X_8k0iDJCKl2-JHEiNHY4uOqrq4oG-mY-Amw3g6p0l4',
+        mimeType: 'image/png',
+        sizes: ['200x200'],
+      },
+    ],
   },
   {
     capabilities: {
