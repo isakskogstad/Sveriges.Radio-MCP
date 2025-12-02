@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="docs/images/banner.png" alt="Sveriges Radio MCP Server" width="100%">
+  <img width="586" height="252" alt="SR MCP logo1" src="https://github.com/user-attachments/assets/8d268ee5-5dc1-44bb-9759-3c56722c6530" />
+
 </p>
 
 <p align="center">
-  <a href="https://sverigesradio-mcp.onrender.com/health"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fsverigesradio-mcp.onrender.com%2Fhealth&query=%24.status&label=Server&color=brightgreen" alt="Server Status"></a>
   <a href="https://registry.modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-Registry-blue" alt="MCP Registry"></a>
   <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-2025--03--26-green" alt="Protocol"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
@@ -11,21 +11,20 @@
 </p>
 
 <p align="center">
-  <strong>MCP-server for Sveriges Radio's Open API - access Swedish public radio programs, podcasts, live streams, playlists, news and traffic information.</strong>
+  <strong>SR MCP-server</strong>
 </p>
 
 <p align="center">
-  <em>MCP-server för Sveriges Radios Öppna API - tillgång till svensk public service-radio: program, podcasts, liveströmmar, spellistor, nyheter och trafikinformation.</em>
 </p>
 
 ---
 
-## Användningsområden
+# Sveriges Radio MCP
 
-Koppla MCP-servern till din AI-assistent och ställ frågor på naturligt språk. Här är fyra huvudsakliga användningsområden - med exempelfrågor, tillgängliga tools och app-idéer:
+Koppla MCP-servern till din AI-assistent och ställ frågor på naturligt språk eller hämta data om exemplevis program, podcasts, liveströmmar, spellistor, nyheter och trafikinformation. Här är fyra huvudsakliga användningsområden - med exempelfrågor, tillgängliga tools och app-idéer:
 
 ---
-
+## Användingsområden
 ### 📻 1. Live-radio, Nyheter & Trafik
 
 Håll koll på vad som händer just nu - perfekt för morgonrutinen.
