@@ -55,7 +55,7 @@ const sseTransports: Record<string, SSEServerTransport> = {};
 const server = new Server(
   {
     name: 'sverigesradio-mcp',
-    version: '1.0.0',
+    version: '1.2.0',
   },
   {
     capabilities: {
@@ -546,7 +546,7 @@ const httpServer = http.createServer(async (req, res) => {
       JSON.stringify({
         status: 'healthy',
         service: 'sverigesradio-mcp',
-        version: '1.0.0',
+        version: '1.2.0',
         transport: 'StreamableHTTP + SSE (legacy)',
         tools: allTools.length,
         resources: allResources.length,

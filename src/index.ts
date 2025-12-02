@@ -23,7 +23,7 @@ import { asJsonContent, formatErrorPayload, parseArgs } from './lib/tool-utils.j
 const server = new Server(
   {
     name: 'sverigesradio-mcp',
-    version: '1.0.0',
+    version: '1.2.0',
   },
   {
     capabilities: {
@@ -59,8 +59,8 @@ Detta är en MCP-server för Sveriges Radios öppna API. Du kan använda dessa v
 
 ### Spellistor 🎵
 - Se vilken låt som spelas just nu med \`get_playlist_rightnow\`
+- Hämta musikhistorik för en kanal med \`get_channel_playlist\`
 - Hämta komplett spellista för ett avsnitt med \`get_episode_playlist\`
-- Sök efter låtar, artister och album med \`search_playlists\`
 
 ### Nyheter & Trafik
 - Hämta senaste nyheterna från Ekot med \`get_latest_news_episodes\`
