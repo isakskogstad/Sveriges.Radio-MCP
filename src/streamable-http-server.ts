@@ -38,16 +38,178 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const PROJECT_ROOT = join(__dirname, '..');
 
+// ===========================================
+// CONFIGURATION
+// ===========================================
 const PORT = process.env.PORT || 3000;
 const AUTH_TOKEN = process.env.MCP_AUTH_TOKEN; // Optional token authentication
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+const SESSION_TTL_MS = Number(process.env.SESSION_TTL_MS) || 1800000; // 30 minutes default
+const RATE_LIMIT_REQUESTS = Number(process.env.RATE_LIMIT_REQUESTS) || 60; // 60 requests per minute
+const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute window
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS || '*'; // CORS origins
+const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
+
+// ===========================================
+// LOGGING UTILITIES
+// ===========================================
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+const LOG_LEVELS: Record<LogLevel, number> = { debug: 0, info: 1, warn: 2, error: 3 };
+
+function log(level: LogLevel, message: string, data?: Record<string, unknown>): void {
+  if (LOG_LEVELS[level] >= LOG_LEVELS[LOG_LEVEL as LogLevel]) {
+    const timestamp = new Date().toISOString();
+    const logEntry = {
+      timestamp,
+      level,
+      message,
+      ...data,
+    };
+    console.error(JSON.stringify(logEntry));
+  }
+}
+
+// ===========================================
+// SESSION MANAGEMENT
+// ===========================================
+interface SessionInfo {
+  transport: StreamableHTTPServerTransport;
+  lastActivity: number;
+  requestCount: number;
+}
 
 // Session management for modern StreamableHTTP transport
-const transports: Record<string, StreamableHTTPServerTransport> = {};
+const sessions: Record<string, SessionInfo> = {};
 const pendingTransports: Record<string, StreamableHTTPServerTransport> = {};
 
 // Legacy SSE transport sessions
 const sseTransports: Record<string, SSEServerTransport> = {};
+
+// Backwards compatibility aliases
+const transports: Record<string, StreamableHTTPServerTransport> = {};
+
+// ===========================================
+// RATE LIMITING
+// ===========================================
+interface RateLimitEntry {
+  count: number;
+  resetTime: number;
+}
+
+const rateLimits: Record<string, RateLimitEntry> = {};
+
+function getClientIP(req: http.IncomingMessage): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) {
+    const ips = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+    return ips.split(',')[0].trim();
+  }
+  return req.socket.remoteAddress || 'unknown';
+}
+
+function isRateLimited(clientIP: string): boolean {
+  const now = Date.now();
+  const entry = rateLimits[clientIP];
+
+  if (!entry || now > entry.resetTime) {
+    rateLimits[clientIP] = { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS };
+    return false;
+  }
+
+  entry.count++;
+  if (entry.count > RATE_LIMIT_REQUESTS) {
+    log('warn', 'Rate limit exceeded', { clientIP, count: entry.count });
+    return true;
+  }
+
+  return false;
+}
+
+function getRateLimitHeaders(clientIP: string): Record<string, string> {
+  const entry = rateLimits[clientIP];
+  const remaining = entry ? Math.max(0, RATE_LIMIT_REQUESTS - entry.count) : RATE_LIMIT_REQUESTS;
+  const reset = entry ? Math.ceil((entry.resetTime - Date.now()) / 1000) : RATE_LIMIT_WINDOW_MS / 1000;
+
+  return {
+    'X-RateLimit-Limit': String(RATE_LIMIT_REQUESTS),
+    'X-RateLimit-Remaining': String(remaining),
+    'X-RateLimit-Reset': String(reset),
+  };
+}
+
+// ===========================================
+// SESSION TTL CLEANUP
+// ===========================================
+function cleanupExpiredSessions(): void {
+  const now = Date.now();
+  let cleanedCount = 0;
+
+  for (const [sessionId, info] of Object.entries(sessions)) {
+    if (now - info.lastActivity > SESSION_TTL_MS) {
+      log('info', 'Cleaning up expired session', { sessionId, inactiveMs: now - info.lastActivity });
+      try {
+        info.transport.close();
+      } catch (error) {
+        log('error', 'Error closing expired session', { sessionId, error: String(error) });
+      }
+      delete sessions[sessionId];
+      delete transports[sessionId];
+      cleanedCount++;
+    }
+  }
+
+  // Also clean up old rate limit entries
+  for (const [ip, entry] of Object.entries(rateLimits)) {
+    if (now > entry.resetTime + RATE_LIMIT_WINDOW_MS) {
+      delete rateLimits[ip];
+    }
+  }
+
+  if (cleanedCount > 0) {
+    log('info', 'Session cleanup completed', { cleanedSessions: cleanedCount, activeSessions: Object.keys(sessions).length });
+  }
+}
+
+// Run cleanup every minute
+setInterval(cleanupExpiredSessions, 60000);
+
+// ===========================================
+// UUID VALIDATION
+// ===========================================
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isValidUUID(id: string): boolean {
+  return UUID_REGEX.test(id);
+}
+
+// ===========================================
+// CORS CONFIGURATION
+// ===========================================
+function getCorsHeaders(req: http.IncomingMessage): Record<string, string> {
+  const origin = req.headers.origin || '*';
+
+  // If ALLOWED_ORIGINS is *, allow all
+  if (ALLOWED_ORIGINS === '*') {
+    return {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Mcp-Session-Id',
+      'Access-Control-Expose-Headers': 'Mcp-Session-Id, WWW-Authenticate, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset',
+    };
+  }
+
+  // Check if origin is in allowed list
+  const allowedList = ALLOWED_ORIGINS.split(',').map((o) => o.trim());
+  const isAllowed = allowedList.includes(origin);
+
+  return {
+    'Access-Control-Allow-Origin': isAllowed ? origin : allowedList[0],
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, Mcp-Session-Id',
+    'Access-Control-Expose-Headers': 'Mcp-Session-Id, WWW-Authenticate, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset',
+    'Vary': 'Origin',
+  };
+}
 
 /**
  * Create MCP Server with enhanced instructions
@@ -91,8 +253,8 @@ Detta är en MCP-server för Sveriges Radios öppna API. Du kan använda dessa v
 
 ### Spellistor 🎵
 - Se vilken låt som spelas just nu med \`get_playlist_rightnow\`
+- Hämta musikhistorik för en kanal med \`get_channel_playlist\`
 - Hämta komplett spellista för ett avsnitt med \`get_episode_playlist\`
-- Sök efter låtar, artister och album med \`search_playlists\`
 
 ### Nyheter & Trafik
 - Hämta senaste nyheterna från Ekot med \`get_latest_news_episodes\`
@@ -306,47 +468,58 @@ async function createAndConnectTransport(
   logPrefix: string = ''
 ): Promise<StreamableHTTPServerTransport> {
   // Check if transport already exists (avoid duplicates)
-  if (pendingTransports[sessionId] || transports[sessionId]) {
-    return pendingTransports[sessionId] || transports[sessionId];
+  if (pendingTransports[sessionId]) {
+    return pendingTransports[sessionId];
+  }
+  if (sessions[sessionId]) {
+    sessions[sessionId].lastActivity = Date.now();
+    return sessions[sessionId].transport;
+  }
+  if (transports[sessionId]) {
+    return transports[sessionId];
   }
 
-  console.log(`${logPrefix}Creating new transport for session: ${sessionId}`);
+  log('info', 'Creating new transport', { sessionId, logPrefix });
 
   // Create new StreamableHTTP transport with session management
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: () => sessionId, // Use pre-generated session ID
     enableJsonResponse: true, // Support both JSON and SSE responses
     onsessioninitialized: (actualId) => {
-      console.log(`Session initialized: ${actualId}`);
+      log('info', 'Session initialized', { sessionId: actualId });
       delete pendingTransports[actualId];
     },
     onsessionclosed: (closedId) => {
-      console.log(`Session closed: ${closedId}`);
-      if (transports[closedId]) {
-        delete transports[closedId];
-      }
+      log('info', 'Session closed', { sessionId: closedId });
+      delete sessions[closedId];
+      delete transports[closedId];
     },
   });
 
   // Track pending transport
   pendingTransports[sessionId] = transport;
   transports[sessionId] = transport;
+  sessions[sessionId] = {
+    transport,
+    lastActivity: Date.now(),
+    requestCount: 0,
+  };
 
   // Set cleanup handler
   transport.onclose = () => {
-    console.log(`Transport closed for session: ${sessionId}`);
-    if (transports[sessionId]) {
-      delete transports[sessionId];
-    }
+    log('info', 'Transport closed', { sessionId });
+    delete sessions[sessionId];
+    delete transports[sessionId];
   };
 
   // Connect transport to MCP server
   try {
     await server.connect(transport);
-    console.log(`${logPrefix}Transport connected successfully`);
+    log('info', 'Transport connected', { sessionId, logPrefix });
   } catch (error) {
-    console.error(`${logPrefix}Failed to connect transport:`, error);
+    log('error', 'Failed to connect transport', { sessionId, error: String(error) });
     delete pendingTransports[sessionId];
+    delete sessions[sessionId];
     delete transports[sessionId];
     throw error;
   }
@@ -518,20 +691,22 @@ async function renderReadme(): Promise<string> {
  * HTTP Server with support for both modern and legacy transports
  */
 const httpServer = http.createServer(async (req, res) => {
-  // Set CORS headers for all responses
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Mcp-Session-Id');
-  res.setHeader('Access-Control-Expose-Headers', 'Mcp-Session-Id, WWW-Authenticate');
+  const clientIP = getClientIP(req);
 
-  // Handle preflight requests
+  // Set CORS headers for all responses
+  const corsHeaders = getCorsHeaders(req);
+  for (const [key, value] of Object.entries(corsHeaders)) {
+    res.setHeader(key, value);
+  }
+
+  // Handle preflight requests (no rate limiting for OPTIONS)
   if (req.method === 'OPTIONS') {
     res.writeHead(200);
     res.end();
     return;
   }
 
-  // Root endpoint - serve README as HTML (no auth required)
+  // Root endpoint - serve README as HTML (no auth required, no rate limiting)
   if (req.url === '/' && req.method === 'GET') {
     const html = await renderReadme();
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -539,7 +714,7 @@ const httpServer = http.createServer(async (req, res) => {
     return;
   }
 
-  // Health check endpoint (no auth required)
+  // Health check endpoint (no auth required, no rate limiting)
   if (req.url === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(
@@ -552,11 +727,43 @@ const httpServer = http.createServer(async (req, res) => {
         resources: allResources.length,
         prompts: allPrompts.length,
         authRequired: !!AUTH_TOKEN,
-        activeSessions: Object.keys(transports).length,
+        activeSessions: Object.keys(sessions).length,
         activeLegacySessions: Object.keys(sseTransports).length,
+        config: {
+          sessionTtlMs: SESSION_TTL_MS,
+          rateLimitRequests: RATE_LIMIT_REQUESTS,
+          corsOrigins: ALLOWED_ORIGINS === '*' ? 'all' : ALLOWED_ORIGINS.split(',').length,
+        },
       })
     );
     return;
+  }
+
+  // Rate limiting for MCP endpoints
+  if (isRateLimited(clientIP)) {
+    const rateLimitHeaders = getRateLimitHeaders(clientIP);
+    res.writeHead(429, {
+      'Content-Type': 'application/json',
+      'Retry-After': '60',
+      ...rateLimitHeaders,
+    });
+    res.end(
+      JSON.stringify({
+        jsonrpc: '2.0',
+        error: {
+          code: -32000,
+          message: `Rate limit exceeded. Maximum ${RATE_LIMIT_REQUESTS} requests per minute.`,
+        },
+        id: null,
+      })
+    );
+    return;
+  }
+
+  // Add rate limit headers to all subsequent responses
+  const rateLimitHeaders = getRateLimitHeaders(clientIP);
+  for (const [key, value] of Object.entries(rateLimitHeaders)) {
+    res.setHeader(key, value);
   }
 
   // ========================================
@@ -613,22 +820,44 @@ const httpServer = http.createServer(async (req, res) => {
       if (isInitRequest) {
         // Initialize: create new session
         effectiveSessionId = randomUUID();
-        console.log(`Initialize request - creating new session: ${effectiveSessionId}`);
+        log('info', 'Initialize request - creating new session', { sessionId: effectiveSessionId, clientIP });
         transport = await createAndConnectTransport(effectiveSessionId, 'Initialize: ');
+      } else if (clientSessionId && !isValidUUID(clientSessionId)) {
+        // Invalid UUID format
+        log('warn', 'Invalid session ID format', { clientSessionId, clientIP });
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            error: {
+              code: ErrorCodes.SESSION_ERROR,
+              message: 'Invalid session ID format. Must be a valid UUID.',
+            },
+            id: rpcId,
+          })
+        );
+        return;
+      } else if (clientSessionId && sessions[clientSessionId]) {
+        // Existing session: reuse transport and update activity
+        effectiveSessionId = clientSessionId;
+        sessions[clientSessionId].lastActivity = Date.now();
+        sessions[clientSessionId].requestCount++;
+        transport = sessions[clientSessionId].transport;
+        log('debug', 'Reusing existing session', { sessionId: effectiveSessionId, requestCount: sessions[clientSessionId].requestCount });
       } else if (clientSessionId && transports[clientSessionId]) {
-        // Existing session: reuse transport
+        // Fallback to transports map
         effectiveSessionId = clientSessionId;
         transport = transports[clientSessionId];
-        console.log(`Reusing existing session: ${effectiveSessionId}`);
+        log('debug', 'Reusing transport from legacy map', { sessionId: effectiveSessionId });
       } else if (clientSessionId && pendingTransports[clientSessionId]) {
         // Pending session: wait for transport
         effectiveSessionId = clientSessionId;
         transport = await pendingTransports[clientSessionId];
-        console.log(`Using pending session: ${effectiveSessionId}`);
+        log('debug', 'Using pending session', { sessionId: effectiveSessionId });
       } else if (clientSessionId) {
-        // Unknown session: create new transport with provided ID
+        // Unknown but valid UUID session: create new transport with provided ID
         effectiveSessionId = clientSessionId;
-        console.log(`Unknown session ID, creating new: ${effectiveSessionId}`);
+        log('info', 'Unknown session ID, creating new', { sessionId: effectiveSessionId, clientIP });
         transport = await createAndConnectTransport(effectiveSessionId, 'Unknown Session: ');
       } else {
         // No session ID for non-initialize request: error
@@ -653,7 +882,7 @@ const httpServer = http.createServer(async (req, res) => {
       try {
         await transport.handleRequest(req, res, parsedBody);
       } catch (error) {
-        console.error(`Error handling POST request:`, error);
+        log('error', 'Error handling POST request', { sessionId: effectiveSessionId, error: String(error) });
         if (!res.headersSent) {
           res.writeHead(500, { 'Content-Type': 'application/json' });
           res.end(
@@ -694,7 +923,7 @@ const httpServer = http.createServer(async (req, res) => {
       try {
         await transport.handleRequest(req, res, undefined);
       } catch (error) {
-        console.error(`Error handling GET request:`, error);
+        log('error', 'Error handling GET request', { sessionId: effectiveSessionId, error: String(error) });
         if (!res.headersSent) {
           res.writeHead(500, { 'Content-Type': 'application/json' });
           res.end(
@@ -715,13 +944,19 @@ const httpServer = http.createServer(async (req, res) => {
       const sessionIdHeader = req.headers['mcp-session-id'];
       const sessionId = Array.isArray(sessionIdHeader) ? sessionIdHeader[0] : sessionIdHeader;
 
-      if (sessionId && transports[sessionId]) {
-        console.log(`Closing session via DELETE: ${sessionId}`);
+      if (sessionId && (sessions[sessionId] || transports[sessionId])) {
+        log('info', 'Closing session via DELETE', { sessionId });
         try {
-          await transports[sessionId].close();
-          delete transports[sessionId];
+          if (sessions[sessionId]) {
+            await sessions[sessionId].transport.close();
+            delete sessions[sessionId];
+          }
+          if (transports[sessionId]) {
+            await transports[sessionId].close();
+            delete transports[sessionId];
+          }
         } catch (error) {
-          console.error(`Error closing session:`, error);
+          log('error', 'Error closing session', { sessionId, error: String(error) });
         }
         res.writeHead(204);
         res.end();
@@ -753,7 +988,7 @@ const httpServer = http.createServer(async (req, res) => {
       return; // Response already sent
     }
 
-    console.log('Legacy SSE connection established');
+    log('info', 'Legacy SSE connection established', { clientIP });
 
     // Create legacy SSE transport
     const transport = new SSEServerTransport('/messages', res);
@@ -761,7 +996,7 @@ const httpServer = http.createServer(async (req, res) => {
 
     // Set cleanup handler
     const cleanup = () => {
-      console.log(`Legacy SSE transport closed: ${transport.sessionId}`);
+      log('info', 'Legacy SSE transport closed', { sessionId: transport.sessionId });
       if (sseTransports[transport.sessionId]) {
         delete sseTransports[transport.sessionId];
       }
@@ -773,7 +1008,7 @@ const httpServer = http.createServer(async (req, res) => {
     try {
       await server.connect(transport);
     } catch (error) {
-      console.error('Error connecting legacy SSE transport:', error);
+      log('error', 'Error connecting legacy SSE transport', { error: String(error) });
       cleanup();
       if (!res.headersSent) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -857,7 +1092,7 @@ const httpServer = http.createServer(async (req, res) => {
     try {
       await transport.handlePostMessage(req, res, parsedBody);
     } catch (error) {
-      console.error('Error handling legacy POST message:', error);
+      log('error', 'Error handling legacy POST message', { sessionId, error: String(error) });
       if (!res.headersSent) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(
@@ -893,12 +1128,16 @@ const httpServer = http.createServer(async (req, res) => {
  * Start HTTP server
  */
 httpServer.listen(PORT, () => {
+  // Use console.log for startup banner (human-readable)
   console.log('========================================');
   console.log('Sveriges Radio MCP Server');
   console.log('========================================');
-  console.log(`Version: 1.0.0`);
+  console.log(`Version: 1.2.0`);
   console.log(`Port: ${PORT}`);
   console.log(`Auth: ${AUTH_TOKEN ? 'Enabled (Bearer token required)' : 'Disabled'}`);
+  console.log(`CORS: ${ALLOWED_ORIGINS === '*' ? 'All origins' : ALLOWED_ORIGINS}`);
+  console.log(`Session TTL: ${SESSION_TTL_MS / 1000 / 60} minutes`);
+  console.log(`Rate Limit: ${RATE_LIMIT_REQUESTS} requests/minute`);
   console.log('');
   console.log('Endpoints:');
   console.log(`  Health:  http://localhost:${PORT}/health`);
@@ -907,4 +1146,17 @@ httpServer.listen(PORT, () => {
   console.log('');
   console.log(`Tools: ${allTools.length} | Resources: ${allResources.length} | Prompts: ${allPrompts.length}`);
   console.log('========================================');
+
+  // Structured log for monitoring
+  log('info', 'Server started', {
+    version: '1.2.0',
+    port: PORT,
+    authEnabled: !!AUTH_TOKEN,
+    corsOrigins: ALLOWED_ORIGINS,
+    sessionTtlMs: SESSION_TTL_MS,
+    rateLimitRequests: RATE_LIMIT_REQUESTS,
+    tools: allTools.length,
+    resources: allResources.length,
+    prompts: allPrompts.length,
+  });
 });

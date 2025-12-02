@@ -1,0 +1,241 @@
+{
+  "$schema": "https://registry.modelcontextprotocol.io/schema/server.json",
+  "name": "io.github.isakskogstad/sverigesradio",
+  "title": "Sveriges Radio MCP Server",
+  "description": "MCP server for Sveriges Radio's Open API - access Swedish radio programs, podcasts, live streams, playlists, news and traffic information.",
+  "website": "https://github.com/isakskogstad/Sveriges.Radio-MCP",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/isakskogstad/Sveriges.Radio-MCP.git"
+  },
+  "version": "1.2.0",
+  "license": "MIT",
+  "author": {
+    "name": "Isak Skogstad"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "sveriges-radio",
+    "swedish-radio",
+    "radio",
+    "podcast",
+    "sweden",
+    "news",
+    "traffic",
+    "live-stream",
+    "music",
+    "playlist"
+  ],
+  "categories": [
+    "media",
+    "news",
+    "entertainment"
+  ],
+  "capabilities": {
+    "tools": true,
+    "resources": true,
+    "prompts": true
+  },
+  "transports": {
+    "stdio": {
+      "command": "npx",
+      "args": ["-y", "sverigesradio-mcp"]
+    },
+    "streamableHttp": {
+      "url": "https://sverigesradio-mcp.onrender.com/mcp"
+    }
+  },
+  "environmentVariables": [
+    {
+      "name": "MCP_AUTH_TOKEN",
+      "description": "Optional Bearer token for authentication (leave empty for public access)",
+      "required": false,
+      "isSecret": true
+    },
+    {
+      "name": "PORT",
+      "description": "Port for HTTP server (default: 3000)",
+      "required": false,
+      "default": "3000"
+    },
+    {
+      "name": "SR_API_TIMEOUT_MS",
+      "description": "Timeout for SR API requests in milliseconds (default: 8000)",
+      "required": false,
+      "default": "8000"
+    },
+    {
+      "name": "ALLOWED_ORIGINS",
+      "description": "Comma-separated list of allowed CORS origins (default: * for all)",
+      "required": false,
+      "default": "*"
+    },
+    {
+      "name": "SESSION_TTL_MS",
+      "description": "Session timeout in milliseconds (default: 1800000 = 30 minutes)",
+      "required": false,
+      "default": "1800000"
+    },
+    {
+      "name": "RATE_LIMIT_REQUESTS",
+      "description": "Max requests per minute per IP (default: 60)",
+      "required": false,
+      "default": "60"
+    }
+  ],
+  "tools": [
+    {
+      "name": "list_channels",
+      "description": "List all Sveriges Radio channels (P1-P4, local stations)"
+    },
+    {
+      "name": "get_channel_rightnow",
+      "description": "Get what's playing right now on a specific channel"
+    },
+    {
+      "name": "search_programs",
+      "description": "Search for radio programs with relevance ranking"
+    },
+    {
+      "name": "get_program",
+      "description": "Get detailed information about a specific program"
+    },
+    {
+      "name": "list_program_categories",
+      "description": "List all 15 program categories"
+    },
+    {
+      "name": "list_episodes",
+      "description": "List episodes for a program"
+    },
+    {
+      "name": "search_episodes",
+      "description": "Full-text search in episodes"
+    },
+    {
+      "name": "get_episode",
+      "description": "Get specific episode with audio files"
+    },
+    {
+      "name": "get_episodes_batch",
+      "description": "Fetch multiple episodes at once"
+    },
+    {
+      "name": "get_latest_episode",
+      "description": "Get the latest episode for a program"
+    },
+    {
+      "name": "get_channel_schedule",
+      "description": "Get schedule for a channel and date"
+    },
+    {
+      "name": "get_program_broadcasts",
+      "description": "Get upcoming broadcasts for a program"
+    },
+    {
+      "name": "get_all_rightnow",
+      "description": "Get what's playing on ALL channels right now"
+    },
+    {
+      "name": "get_playlist_rightnow",
+      "description": "Get current song (previous, current, next) with full metadata"
+    },
+    {
+      "name": "get_channel_playlist",
+      "description": "Get song history for a channel in time range"
+    },
+    {
+      "name": "get_program_playlist",
+      "description": "Get song history for a program in time range"
+    },
+    {
+      "name": "get_episode_playlist",
+      "description": "Get complete playlist for an episode"
+    },
+    {
+      "name": "list_news_programs",
+      "description": "List all news programs"
+    },
+    {
+      "name": "get_latest_news_episodes",
+      "description": "Get latest news broadcasts"
+    },
+    {
+      "name": "get_traffic_messages",
+      "description": "Get traffic messages by area"
+    },
+    {
+      "name": "get_traffic_areas",
+      "description": "Get traffic areas (with GPS lookup)"
+    },
+    {
+      "name": "search_all",
+      "description": "Global search across programs, episodes, and channels"
+    },
+    {
+      "name": "get_recently_published",
+      "description": "Get recently published content"
+    },
+    {
+      "name": "get_top_stories",
+      "description": "Get featured content from SR"
+    },
+    {
+      "name": "list_extra_broadcasts",
+      "description": "List extra broadcasts (sports, special events)"
+    },
+    {
+      "name": "get_episode_group",
+      "description": "Get a collection of episodes"
+    }
+  ],
+  "resources": [
+    {
+      "uri": "sr://api/info",
+      "name": "API Information",
+      "description": "API capabilities, versions, rate limits, caching info"
+    },
+    {
+      "uri": "sr://channels/all",
+      "name": "All Channels",
+      "description": "Complete channel list with IDs (P1-P4, local stations)"
+    },
+    {
+      "uri": "sr://audio/quality-guide",
+      "name": "Audio Quality Guide",
+      "description": "Audio quality and formats (hi/normal/low)"
+    },
+    {
+      "uri": "sr://categories/programs",
+      "name": "Program Categories",
+      "description": "All 15 program categories with descriptions"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "find-podcast",
+      "description": "Find podcasts by topic"
+    },
+    {
+      "name": "whats-on-now",
+      "description": "What's broadcasting right now"
+    },
+    {
+      "name": "whats-playing-now",
+      "description": "Current song on music channels"
+    },
+    {
+      "name": "traffic-nearby",
+      "description": "Traffic situation in your area"
+    },
+    {
+      "name": "news-briefing",
+      "description": "Latest news summary"
+    },
+    {
+      "name": "explore-schedule",
+      "description": "Browse the schedule"
+    }
+  ]
+}
