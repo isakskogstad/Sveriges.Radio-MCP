@@ -1,93 +1,48 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640">
   <defs>
-    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#1a1a2e"/>
-      <stop offset="50%" style="stop-color:#16213e"/>
-      <stop offset="100%" style="stop-color:#0f3460"/>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a0f"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
     </linearGradient>
-    <linearGradient id="accent-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#e94560"/>
-      <stop offset="100%" style="stop-color:#ff6b6b"/>
-    </linearGradient>
-    <filter id="text-glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-      <feMerge>
-        <feMergeNode in="coloredBlur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
   </defs>
 
   <!-- Background -->
-  <rect width="1280" height="640" fill="url(#bg-grad)"/>
+  <rect width="1280" height="640" fill="url(#bg)"/>
 
-  <!-- Decorative circles -->
-  <circle cx="150" cy="320" r="300" fill="#e94560" opacity="0.05"/>
-  <circle cx="1130" cy="320" r="350" fill="#e94560" opacity="0.03"/>
-  <circle cx="640" cy="640" r="400" fill="#e94560" opacity="0.02"/>
-
-  <!-- Radio waves decoration - left -->
-  <g transform="translate(80, 280)" opacity="0.2">
-    <path d="M0 0 C40 -60 80 60 120 0 C160 -60 200 60 240 0" stroke="#e94560" stroke-width="4" fill="none"/>
-    <path d="M0 40 C40 -20 80 100 120 40 C160 -20 200 100 240 40" stroke="#e94560" stroke-width="3" fill="none"/>
-    <path d="M0 80 C40 20 80 140 120 80 C160 20 200 140 240 80" stroke="#e94560" stroke-width="2" fill="none"/>
+  <!-- Decorative radio waves (subtle) -->
+  <g transform="translate(100, 250)" opacity="0.1">
+    <path d="M0 70 Q50 0 100 70 Q150 140 200 70 Q250 0 300 70" stroke="#e94560" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M0 120 Q50 50 100 120 Q150 190 200 120 Q250 50 300 120" stroke="#e94560" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M0 170 Q50 100 100 170 Q150 240 200 170" stroke="#e94560" stroke-width="2" fill="none" stroke-linecap="round"/>
   </g>
 
-  <!-- Radio waves decoration - right -->
-  <g transform="translate(960, 280)" opacity="0.2">
-    <path d="M0 0 C40 -60 80 60 120 0 C160 -60 200 60 240 0" stroke="#e94560" stroke-width="4" fill="none"/>
-    <path d="M0 40 C40 -20 80 100 120 40 C160 -20 200 100 240 40" stroke="#e94560" stroke-width="3" fill="none"/>
-    <path d="M0 80 C40 20 80 140 120 80 C160 20 200 140 240 80" stroke="#e94560" stroke-width="2" fill="none"/>
+  <g transform="translate(880, 250)" opacity="0.1">
+    <path d="M0 70 Q50 0 100 70 Q150 140 200 70 Q250 0 300 70" stroke="#e94560" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M0 120 Q50 50 100 120 Q150 190 200 120 Q250 50 300 120" stroke="#e94560" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M0 170 Q50 100 100 170 Q150 240 200 170" stroke="#e94560" stroke-width="2" fill="none" stroke-linecap="round"/>
   </g>
 
-  <!-- Main content area -->
-  <g transform="translate(640, 240)">
-    <!-- Logo circle -->
-    <circle cx="0" cy="-80" r="70" fill="#ffffff" opacity="0.1"/>
-    <text x="0" y="-60" text-anchor="middle" font-family="Arial, sans-serif" font-size="50" font-weight="bold" fill="#ffffff">SR</text>
+  <!-- Main content centered -->
+  <g transform="translate(640, 280)">
+    <!-- SR Logo box -->
+    <rect x="-280" y="-80" width="140" height="140" rx="20" fill="#ffffff" opacity="0.05"/>
+    <text x="-210" y="0" text-anchor="middle" font-family="Georgia, serif" font-size="80" font-weight="bold" fill="#ffffff">SR</text>
 
-    <!-- Main title -->
-    <text x="0" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="#ffffff">Sveriges Radio</text>
+    <!-- Divider -->
+    <rect x="-110" y="-60" width="4" height="120" fill="#e94560" rx="2"/>
 
-    <!-- Subtitle -->
-    <text x="0" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="48" fill="url(#accent-grad)" filter="url(#text-glow)">MCP Server</text>
+    <!-- Text -->
+    <text x="-80" y="-15" font-family="system-ui, -apple-system, sans-serif" font-size="56" font-weight="600" fill="#ffffff">Sveriges Radio</text>
+    <text x="-80" y="55" font-family="system-ui, -apple-system, sans-serif" font-size="44" font-weight="400" fill="#e94560">MCP Server</text>
   </g>
 
-  <!-- Description -->
-  <text x="640" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#c0c0c0">
-    Access Swedish public radio: programs, podcasts, live streams,
-  </text>
-  <text x="640" y="435" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#c0c0c0">
-    schedules, news and traffic information
+  <!-- Tagline -->
+  <text x="640" y="450" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="22" fill="#808080">
+    Access Swedish public radio · Programs · Podcasts · Live streams · News · Traffic
   </text>
 
-  <!-- Feature badges -->
-  <g transform="translate(640, 520)">
-    <!-- TypeScript -->
-    <rect x="-340" y="-20" width="110" height="40" rx="20" fill="#3178c6"/>
-    <text x="-285" y="7" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#fff">TypeScript</text>
-
-    <!-- 32 Tools -->
-    <rect x="-210" y="-20" width="100" height="40" rx="20" fill="#ff9800"/>
-    <text x="-160" y="7" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#fff">32 Tools</text>
-
-    <!-- MCP Protocol -->
-    <rect x="-90" y="-20" width="120" height="40" rx="20" fill="#e94560"/>
-    <text x="-30" y="7" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#fff">MCP 2025</text>
-
-    <!-- Remote Ready -->
-    <rect x="50" y="-20" width="130" height="40" rx="20" fill="#4caf50"/>
-    <text x="115" y="7" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#fff">Remote Ready</text>
-
-    <!-- Open Source -->
-    <rect x="200" y="-20" width="130" height="40" rx="20" fill="#9c27b0"/>
-    <text x="265" y="7" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#fff">Open Source</text>
-  </g>
-
-  <!-- GitHub indicator -->
-  <g transform="translate(640, 590)">
-    <text x="0" y="0" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#808080">
-      github.com/isakskogstad/Sveriges.Radio-MCP
-    </text>
-  </g>
+  <!-- GitHub URL -->
+  <text x="640" y="580" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="18" fill="#505050">
+    github.com/isakskogstad/Sveriges.Radio-MCP
+  </text>
 </svg>
