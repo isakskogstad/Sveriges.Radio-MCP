@@ -205,9 +205,12 @@ Realtidsinfo om trafikstörningar för din pendling.
 <details>
 <summary><strong>ChatGPT</strong></summary>
 
-1. Gå till **Settings** → **Connected Apps** → **Add Plugin**
-2. Välj "Add custom MCP server"
-3. Ange URL: `https://sverigesradio-mcp.onrender.com/mcp`
+1. Öppna inställningar och aktivera Developer Mode
+2. Skapa ny anslutning med URL: `https://sverigesradio-mcp.onrender.com/mcp` 
+
+Se steg-för-steg här:
+![ChatGPT anslutning till MCP](https://github.com/user-attachments/assets/eb99a8ad-2154-4a58-b13f-c1edb57dbf47)
+
 
 </details>
 
