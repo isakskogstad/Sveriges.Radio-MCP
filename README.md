@@ -300,11 +300,8 @@ claude mcp add sverigesradio node /path/to/Sveriges.Radio-MCP/dist/index.js
 
 ## Licens
 
+Skapad av Isak Skogstad, fristående från Sveriges Radio.
 MIT (c) Isak Skogstad
-
----
-
-## Länkar
 
 - [SR API Dokumentation](https://api.sr.se/api/documentation/v2/index.html)
 - [SR API Villkor](https://www.sverigesradio.se/artikel/api-villkor)
@@ -313,6 +310,3 @@ MIT (c) Isak Skogstad
 
 ---
 
-## Övrigt
-
-Skapad av Isak Skogstad
