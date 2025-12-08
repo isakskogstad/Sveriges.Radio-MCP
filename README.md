@@ -21,11 +21,14 @@
 
 # Sveriges Radio MCP
 
-Koppla MCP-servern till din AI-assistent och ställ frågor på naturligt språk eller hämta data om exemplevis program, podcasts, liveströmmar, spellistor, nyheter och trafikinformation. Här är fyra huvudsakliga användningsområden - med exempelfrågor, tillgängliga tools och app-idéer:
+Koppla MCP-servern till din AI-assistent och ställ frågor på naturligt språk eller hämta data om exemplevis program, podcasts, liveströmmar, spellistor, nyheter och trafikinformation. Servern hämtar data från Sveriges Radios öppna API, som inte längre underhålls men fortfarande går att använda utan problem.
 
 ---
 ## Användingsområden
-### 📻 1. Live-radio, Nyheter & Trafik
+
+Här är fyra huvudsakliga användningsområden - med exempelfrågor, tillgängliga tools och app-idéer:
+
+### 📻 1. Live-radio, nyheter & trafikuppdateringar
 
 Håll koll på vad som händer just nu - perfekt för morgonrutinen.
 
@@ -66,7 +69,7 @@ Håll koll på vad som händer just nu - perfekt för morgonrutinen.
 
 ---
 
-### 🎵 2. Musik & Spellistor
+### 🎵 2. Musik, spellistor & statistik
 
 Hitta låtar du hört på radion och utforska musikhistorik.
 
@@ -103,7 +106,7 @@ Hitta låtar du hört på radion och utforska musikhistorik.
 
 ---
 
-### 🎧 3. Podcasts & Program
+### 🎧 3. Podcasts, program & sändningar
 
 Hitta nya podcasts, sök i avsnitt och planera ditt lyssnande.
 
@@ -195,7 +198,7 @@ Realtidsinfo om trafikstörningar för din pendling.
 
 ## Snabbstart
 
-### Alternativ 1: Remote Server (Rekommenderat)
+### Alternativ 1: Remote server (Rekommenderat)
 
 **Ingen installation krävs!** Använd vår hostade server direkt.
 
@@ -270,7 +273,7 @@ sverigesradio-mcp
 
 ---
 
-### Alternativ 3: Lokal Installation
+### Alternativ 3: Lokal installation
 
 ```bash
 git clone https://github.com/isakskogstad/Sveriges.Radio-MCP.git
@@ -300,13 +303,12 @@ MIT (c) Isak Skogstad
 
 ## Länkar
 
-- [GitHub Repository](https://github.com/isakskogstad/Sveriges.Radio-MCP)
-- [SR API Dokumentation](https://api.sr.se/api/documentation/v2/)
+- [SR API Dokumentation](https://api.sr.se/api/documentation/v2/index.html)
 - [MCP Protocol](https://modelcontextprotocol.io)
 - [Changelog](CHANGELOG.md)
 
 ---
 
-## Support
+## Övrigt
 
-Skapa ett [GitHub Issue](https://github.com/isakskogstad/Sveriges.Radio-MCP/issues) för bugrapporter eller funktionsförfrågningar.
+Skapad av Isak Skogstad
