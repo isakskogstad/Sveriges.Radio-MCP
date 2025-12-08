@@ -307,6 +307,7 @@ MIT (c) Isak Skogstad
 ## Länkar
 
 - [SR API Dokumentation](https://api.sr.se/api/documentation/v2/index.html)
+- [SR API Villkor](https://www.sverigesradio.se/artikel/api-villkor)
 - [MCP Protocol](https://modelcontextprotocol.io)
 - [Changelog](CHANGELOG.md)
 
