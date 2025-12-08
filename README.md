@@ -208,7 +208,7 @@ Realtidsinfo om trafikstörningar för din pendling.
 1. Öppna inställningar och aktivera Developer Mode
 2. Skapa ny anslutning med URL: `https://sverigesradio-mcp.onrender.com/mcp` 
 
-Se steg-för-steg här:
+#### Steg-för-steg – så ansluter du ChatGPT till en MCP-server (tryck play)
 ![ChatGPT anslutning till MCP](https://github.com/user-attachments/assets/eb99a8ad-2154-4a58-b13f-c1edb57dbf47)
 
 
