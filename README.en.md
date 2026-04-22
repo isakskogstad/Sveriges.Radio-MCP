@@ -12,10 +12,12 @@
 ## What's New in v1.2.0
 
 ### Bug Fixes
+
 - **`get_playlist_rightnow`** - Now correctly returns current song, previous song, next song and channel data (was returning null)
 - **`search_programs`** - Improved search with client-side relevance ranking (searching "P3 Dokumentar" now returns P3 Dokumentar as first result)
 
 ### New Features
+
 - **Session TTL** - Automatic cleanup of inactive sessions (30 min default)
 - **Rate Limiting** - Configurable per-IP rate limiting (60 req/min default)
 - **Configurable CORS** - Control allowed origins via environment variable
@@ -37,75 +39,51 @@ See [CHANGELOG.md](CHANGELOG.md) for full details.
 
 ---
 
-## Quick Start
+## Installation
 
-### Remote Server (Recommended)
-
-**No installation needed!** Use our hosted server:
-
-```
-https://sverigesradio-mcp.onrender.com/mcp
-```
-
-#### Claude Desktop / Claude Code
-
-Add to your Claude MCP configuration (`claude_desktop_config.json` or `.claude.json`):
-
-```json
-{
-  "mcpServers": {
-    "sverigesradio": {
-      "url": "https://sverigesradio-mcp.onrender.com/mcp"
-    }
-  }
-}
-```
-
-#### Cursor
-
-Add to `.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "sverigesradio": {
-      "transportType": "streamable-http",
-      "url": "https://sverigesradio-mcp.onrender.com/mcp"
-    }
-  }
-}
-```
-
-#### Other MCP Clients
-
-Use **StreamableHTTP transport** (MCP 2025-03-26 spec):
-- **Endpoint:** `https://sverigesradio-mcp.onrender.com/mcp`
-- **Auth:** None (public API)
-- **Format:** JSON-RPC 2.0
-
----
-
-### Local Installation
-
-#### From Source
+The server runs locally via stdio transport. Build from source:
 
 ```bash
 git clone https://github.com/isakskogstad/Sveriges.Radio-MCP.git
 cd Sveriges.Radio-MCP
 npm install
 npm run build
-npm start
 ```
 
-#### Claude Code/Desktop (local)
+### Claude Desktop / Claude Code
+
+Add to your MCP configuration (`claude_desktop_config.json` or `.claude.json`):
+
+```json
+{
+  "mcpServers": {
+    "sveriges-radio": {
+      "command": "node",
+      "args": ["/absolute/path/to/Sveriges.Radio-MCP/dist/index.js"]
+    }
+  }
+}
+```
+
+Or via CLI:
 
 ```bash
-# Clone and build
-git clone https://github.com/isakskogstad/Sveriges.Radio-MCP.git
-cd Sveriges.Radio-MCP && npm install && npm run build
+claude mcp add sveriges-radio node /absolute/path/to/Sveriges.Radio-MCP/dist/index.js
+```
 
-# Add to Claude
-claude mcp add sverigesradio node /path/to/Sveriges.Radio-MCP/dist/index.js
+### Cursor
+
+Add to `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "sveriges-radio": {
+      "command": "node",
+      "args": ["/absolute/path/to/Sveriges.Radio-MCP/dist/index.js"]
+    }
+  }
+}
 ```
 
 ---
@@ -113,104 +91,120 @@ claude mcp add sverigesradio node /path/to/Sveriges.Radio-MCP/dist/index.js
 ## Tools (26 total)
 
 ### Real-time & Live (3 tools)
-| Tool | Description |
-|------|-------------|
-| `get_all_rightnow` | What's playing on ALL channels right now |
-| `get_channel_rightnow` | Current program on a specific channel |
+
+| Tool                    | Description                                               |
+| ----------------------- | --------------------------------------------------------- |
+| `get_all_rightnow`      | What's playing on ALL channels right now                  |
+| `get_channel_rightnow`  | Current program on a specific channel                     |
 | `get_playlist_rightnow` | Current song (previous, current, next) with full metadata |
 
 ### Music & Playlists (4 tools)
-| Tool | Description |
-|------|-------------|
-| `get_playlist_rightnow` | Song playing right now on a channel |
-| `get_channel_playlist` | Song history for a channel in time range |
-| `get_program_playlist` | Song history for a program in time range |
-| `get_episode_playlist` | Complete playlist for an episode |
 
-*All songs include: title, artist, composer, album, record label, producer, lyricist, conductor and timestamps*
+| Tool                    | Description                              |
+| ----------------------- | ---------------------------------------- |
+| `get_playlist_rightnow` | Song playing right now on a channel      |
+| `get_channel_playlist`  | Song history for a channel in time range |
+| `get_program_playlist`  | Song history for a program in time range |
+| `get_episode_playlist`  | Complete playlist for an episode         |
+
+_All songs include: title, artist, composer, album, record label, producer, lyricist, conductor and timestamps_
 
 ### Programs & Podcasts (4 tools)
-| Tool | Description |
-|------|-------------|
-| `search_programs` | Search for programs (with relevance ranking) |
-| `get_program` | Get program details |
-| `list_program_categories` | All 15 program categories |
-| `get_program_schedule` | When a program airs |
+
+| Tool                      | Description                                  |
+| ------------------------- | -------------------------------------------- |
+| `search_programs`         | Search for programs (with relevance ranking) |
+| `get_program`             | Get program details                          |
+| `list_program_categories` | All 15 program categories                    |
+| `get_program_schedule`    | When a program airs                          |
 
 ### Broadcasts & Podcasts (3 tools)
-| Tool | Description |
-|------|-------------|
-| `list_broadcasts` | Available broadcasts (30 days) |
-| `list_podfiles` | Podcast files for a program |
-| `get_podfile` | Specific podcast file with metadata |
+
+| Tool              | Description                         |
+| ----------------- | ----------------------------------- |
+| `list_broadcasts` | Available broadcasts (30 days)      |
+| `list_podfiles`   | Podcast files for a program         |
+| `get_podfile`     | Specific podcast file with metadata |
 
 ### Episodes (5 tools)
-| Tool | Description |
-|------|-------------|
-| `list_episodes` | List episodes from a program |
-| `search_episodes` | Full-text search in episodes |
-| `get_episode` | Specific episode with audio files |
-| `get_episodes_batch` | Fetch multiple episodes at once |
-| `get_latest_episode` | Latest episode for a program |
+
+| Tool                 | Description                       |
+| -------------------- | --------------------------------- |
+| `list_episodes`      | List episodes from a program      |
+| `search_episodes`    | Full-text search in episodes      |
+| `get_episode`        | Specific episode with audio files |
+| `get_episodes_batch` | Fetch multiple episodes at once   |
+| `get_latest_episode` | Latest episode for a program      |
 
 ### Channels (2 tools)
-| Tool | Description |
-|------|-------------|
-| `list_channels` | All channels (P1-P4, local stations) |
-| `get_channel_rightnow` | What's playing now on a channel |
+
+| Tool                   | Description                          |
+| ---------------------- | ------------------------------------ |
+| `list_channels`        | All channels (P1-P4, local stations) |
+| `get_channel_rightnow` | What's playing now on a channel      |
 
 ### Schedule (2 tools)
-| Tool | Description |
-|------|-------------|
-| `get_channel_schedule` | Schedule for a channel and date |
+
+| Tool                     | Description                       |
+| ------------------------ | --------------------------------- |
+| `get_channel_schedule`   | Schedule for a channel and date   |
 | `get_program_broadcasts` | Upcoming broadcasts for a program |
 
 ### News (2 tools)
-| Tool | Description |
-|------|-------------|
-| `list_news_programs` | Overview of news programs |
-| `get_latest_news_episodes` | Latest news broadcasts |
+
+| Tool                       | Description               |
+| -------------------------- | ------------------------- |
+| `list_news_programs`       | Overview of news programs |
+| `get_latest_news_episodes` | Latest news broadcasts    |
 
 ### Traffic (2 tools)
-| Tool | Description |
-|------|-------------|
-| `get_traffic_messages` | Traffic messages by area |
-| `get_traffic_areas` | Traffic areas (with GPS lookup) |
+
+| Tool                   | Description                     |
+| ---------------------- | ------------------------------- |
+| `get_traffic_messages` | Traffic messages by area        |
+| `get_traffic_areas`    | Traffic areas (with GPS lookup) |
 
 ### Miscellaneous (5 tools)
-| Tool | Description |
-|------|-------------|
-| `search_all` | Global search (programs + episodes + channels) |
-| `get_recently_published` | Recently published content |
-| `get_top_stories` | Featured content from SR |
-| `list_extra_broadcasts` | Extra broadcasts (sports, special events) |
-| `get_episode_group` | Collection of episodes |
+
+| Tool                     | Description                                    |
+| ------------------------ | ---------------------------------------------- |
+| `search_all`             | Global search (programs + episodes + channels) |
+| `get_recently_published` | Recently published content                     |
+| `get_top_stories`        | Featured content from SR                       |
+| `list_extra_broadcasts`  | Extra broadcasts (sports, special events)      |
+| `get_episode_group`      | Collection of episodes                         |
 
 ### Audio Templates (2 tools)
-| Tool | Description |
-|------|-------------|
+
+| Tool                            | Description                     |
+| ------------------------------- | ------------------------------- |
 | `list_ondemand_audio_templates` | URL templates for podcast audio |
-| `list_live_audio_templates` | URL templates for live streams |
+| `list_live_audio_templates`     | URL templates for live streams  |
 
 ---
 
 ## Usage Examples
 
 ### 1. Live Radio Dashboard
+
 Combine `get_all_rightnow`, `get_latest_news_episodes` and `get_traffic_messages` for a complete overview of what's happening right now.
 
 ### 2. Music Database & Playlist History
+
 Use `get_channel_playlist` to analyze music history on P2 Musik over a week, or `get_program_playlist` to see all songs played in a music program. Perfect for discovering new music or creating statistics on most played artists.
 
 ### 3. Smart Podcast Search
+
 Use `search_programs` with category filter and analyze metadata to find relevant podcasts based on interests.
 
 **Search Tips:**
+
 - Use `channelId` filter for channel-specific programs (e.g., `channelId: 164` for P3)
 - Use `programCategoryId` filter for genre-specific results (e.g., `programCategoryId: 82` for documentaries)
 - The search uses client-side relevance ranking for best results
 
 ### 4. Traffic Analysis
+
 Fetch `get_traffic_messages` for specific geographic areas and create real-time alerts for commuting routes.
 
 ---
@@ -219,12 +213,12 @@ Fetch `get_traffic_messages` for specific geographic areas and create real-time 
 
 Resources provide quick access to reference data:
 
-| Resource | Description |
-|----------|-------------|
-| `sr://api/info` | API capabilities, versions, rate limits, caching info |
-| `sr://channels/all` | Complete channel list with IDs (P1-P4, local stations) |
-| `sr://audio/quality-guide` | Audio quality and formats (hi/normal/low) |
-| `sr://categories/programs` | All 15 program categories with descriptions |
+| Resource                   | Description                                            |
+| -------------------------- | ------------------------------------------------------ |
+| `sr://api/info`            | API capabilities, versions, rate limits, caching info  |
+| `sr://channels/all`        | Complete channel list with IDs (P1-P4, local stations) |
+| `sr://audio/quality-guide` | Audio quality and formats (hi/normal/low)              |
+| `sr://categories/programs` | All 15 program categories with descriptions            |
 
 ---
 
@@ -232,14 +226,14 @@ Resources provide quick access to reference data:
 
 Pre-built workflows for common tasks:
 
-| Prompt | Description |
-|--------|-------------|
-| `find-podcast` | Find podcasts by topic |
-| `whats-on-now` | What's broadcasting right now |
+| Prompt              | Description                    |
+| ------------------- | ------------------------------ |
+| `find-podcast`      | Find podcasts by topic         |
+| `whats-on-now`      | What's broadcasting right now  |
 | `whats-playing-now` | Current song on music channels |
-| `traffic-nearby` | Traffic situation in your area |
-| `news-briefing` | Latest news |
-| `explore-schedule` | Browse the schedule |
+| `traffic-nearby`    | Traffic situation in your area |
+| `news-briefing`     | Latest news                    |
+| `explore-schedule`  | Browse the schedule            |
 
 ---
 
@@ -247,15 +241,10 @@ Pre-built workflows for common tasks:
 
 ### Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `3000` | HTTP server port |
-| `MCP_AUTH_TOKEN` | - | Optional Bearer token for authentication |
-| `ALLOWED_ORIGINS` | `*` | CORS origins (comma-separated or * for all) |
-| `SESSION_TTL_MS` | `1800000` | Session timeout (30 min default) |
-| `RATE_LIMIT_REQUESTS` | `60` | Max requests per minute per IP |
-| `SR_API_TIMEOUT_MS` | `8000` | SR API request timeout |
-| `LOG_LEVEL` | `info` | Log level (debug, info, warn, error) |
+| Variable            | Default | Description                          |
+| ------------------- | ------- | ------------------------------------ |
+| `SR_API_TIMEOUT_MS` | `8000`  | SR API request timeout               |
+| `LOG_LEVEL`         | `info`  | Log level (debug, info, warn, error) |
 
 ---
 
@@ -263,7 +252,6 @@ Pre-built workflows for common tasks:
 
 ```bash
 npm run dev          # Development mode (stdio)
-npm run dev:http     # HTTP server development
 npm run build        # Build production
 npm test             # Run tests
 ```
@@ -299,6 +287,7 @@ src/
 ## API Information
 
 **Sveriges Radio Open API v2**
+
 - Base URL: `https://api.sr.se/api/v2/`
 - Format: JSON/XML
 - Auth: None (public API)

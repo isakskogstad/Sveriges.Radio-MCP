@@ -27,61 +27,18 @@
     "music",
     "playlist"
   ],
-  "categories": [
-    "media",
-    "news",
-    "entertainment"
-  ],
+  "categories": ["media", "news", "entertainment"],
   "capabilities": {
     "tools": true,
     "resources": true,
     "prompts": true
   },
-  "transports": {
-    "stdio": {
-      "command": "npx",
-      "args": ["-y", "sverigesradio-mcp"]
-    },
-    "streamableHttp": {
-      "url": "https://sverigesradio-mcp.onrender.com/mcp"
-    }
-  },
   "environmentVariables": [
-    {
-      "name": "MCP_AUTH_TOKEN",
-      "description": "Optional Bearer token for authentication (leave empty for public access)",
-      "required": false,
-      "isSecret": true
-    },
-    {
-      "name": "PORT",
-      "description": "Port for HTTP server (default: 3000)",
-      "required": false,
-      "default": "3000"
-    },
     {
       "name": "SR_API_TIMEOUT_MS",
       "description": "Timeout for SR API requests in milliseconds (default: 8000)",
       "required": false,
       "default": "8000"
-    },
-    {
-      "name": "ALLOWED_ORIGINS",
-      "description": "Comma-separated list of allowed CORS origins (default: * for all)",
-      "required": false,
-      "default": "*"
-    },
-    {
-      "name": "SESSION_TTL_MS",
-      "description": "Session timeout in milliseconds (default: 1800000 = 30 minutes)",
-      "required": false,
-      "default": "1800000"
-    },
-    {
-      "name": "RATE_LIMIT_REQUESTS",
-      "description": "Max requests per minute per IP (default: 60)",
-      "required": false,
-      "default": "60"
     }
   ],
   "tools": [
