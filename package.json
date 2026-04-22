@@ -44,7 +44,7 @@
     "url": "https://github.com/isakskogstad/Sveriges.Radio-MCP/issues"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.24.0",
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
